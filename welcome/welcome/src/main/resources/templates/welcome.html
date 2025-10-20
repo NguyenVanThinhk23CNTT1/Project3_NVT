@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Welcome</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            margin-top: 10%;
+        }
+        h1 {
+            color: #0078D7;
+        }
+        p {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text="${message}">Welcome!</h1>
+<p>This page is powered by Spring Boot + Thymeleaf 🚀</p>
+</body>
+</html>

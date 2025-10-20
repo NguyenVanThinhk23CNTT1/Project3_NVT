@@ -1,0 +1,14 @@
+### Hello
+GET http://localhost:8080/api/hello
+
+### Get user
+GET http://localhost:8080/api/users/7
+
+### Echo
+POST http://localhost:8080/api/echo
+Content-Type: application/json
+
+{
+  "name": "Thinh",
+  "age": 20
+}
