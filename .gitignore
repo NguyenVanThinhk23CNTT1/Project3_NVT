@@ -18,3 +18,43 @@ Thumbs.db
 *.properties.local
 application-*.yml
 application-*.env
+
+
+# =========================
+# IntelliJ IDEA
+# =========================
+.idea/
+*.iml
+out/
+
+# =========================
+# Maven / Gradle
+# =========================
+target/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Logs
+# =========================
+*.log
+*.log.*
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment / Sensitive configs
+# =========================
+*.env
+*.properties.local
+application-*.yml
+application-*.env
+
+# =========================
+# Others
+# =========================
+/node_modules/
