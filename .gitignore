@@ -58,3 +58,16 @@ application-*.env
 # Others
 # =========================
 /node_modules/
+
+# Ignore build and IDE files
+target/
+.idea/
+*.iml
+out/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Ignore all files from today's lesson (lesson03 and lab03)
+com.nvtdevmaster.lession03/
