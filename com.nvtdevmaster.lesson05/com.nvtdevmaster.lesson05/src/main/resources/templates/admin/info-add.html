@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="admin/admin-layout :: head('Thêm Info')"></head>
+
+<body>
+
+<header th:replace="admin/admin-layout :: header"></header>
+<nav th:replace="admin/admin-layout :: menu"></nav>
+
+<div class="container mt-4">
+
+    <h3>Thêm thông tin mới</h3>
+
+    <form th:action="@{/admin/info/save}" method="post">
+
+        <div class="mb-3">
+            <label>Tên</label>
+            <input name="name" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label>Nickname</label>
+            <input name="nickname" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label>Email</label>
+            <input name="email" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label>Website</label>
+            <input name="website" class="form-control">
+        </div>
+
+        <button class="btn btn-primary">Lưu</button>
+
+    </form>
+
+</div>
+
+<footer th:replace="admin/admin-layout :: footer"></footer>
+
+</body>
+</html>

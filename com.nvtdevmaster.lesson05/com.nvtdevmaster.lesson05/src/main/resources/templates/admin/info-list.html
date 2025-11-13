@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="admin/admin-layout :: head('Danh sách Info')"></head>
+
+<body>
+
+<header th:replace="admin/admin-layout :: header"></header>
+<nav th:replace="admin/admin-layout :: menu"></nav>
+
+<div class="container mt-4">
+
+    <h3>Danh sách thông tin</h3>
+    <a class="btn btn-success mb-3" th:href="@{/admin/info/add}">Thêm mới</a>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Nickname</th>
+            <th>Email</th>
+            <th>Website</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="i : ${infos}">
+            <td th:text="${i.name}"></td>
+            <td th:text="${i.nickname}"></td>
+            <td th:text="${i.email}"></td>
+
+            <td>
+                <a th:href="${i.website}" target="_blank"
+                   th:text="${i.website}"></a>
+            </td>
+
+            <td>
+                <a th:href="@{'/admin/info/edit/' + ${i.nickname}}" class="btn btn-warning btn-sm">Sửa</a>
+                <a th:href="@{'/admin/info/delete/' + ${i.nickname}}" class="btn btn-danger btn-sm">Xóa</a>
+            </td>
+        </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<footer th:replace="admin/admin-layout :: footer"></footer>
+
+</body>
+</html>

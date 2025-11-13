@@ -1,0 +1,65 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no,
+          initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Devmaster Profile</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"/>
+</head>
+
+<body class="bg-light">
+
+<header class="container d-flex align-items-center mt-3">
+    <img src="https://devmaster.edu.vn/images/logo.png"
+         alt="Devmaster Academy" width="100">
+    <div class="ms-3">
+        <h1 th:text="${@environment.getProperty('app.name')}">App Name</h1>
+        <p class="text-muted"
+           th:text="${@environment.getProperty('app.welcome.message')}">
+            Welcome message
+        </p>
+    </div>
+</header>
+
+<section class="container mt-4">
+
+    <!-- 🔥 BOX NỀN ĐỎ NHẠT Y NHƯ YÊU CẦU -->
+    <div class="p-4 rounded mb-3" style="background-color: #fdd;">
+        <h2 class="mb-3">Devmaster Information</h2>
+
+        <table class="table table-bordered bg-white">
+            <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Nickname</th>
+                <th>Email</th>
+                <th>Website</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="info : ${nvtProfile}">
+                <td th:text="${info.name}">Name</td>
+                <td th:text="${info.nickname}">Nickname</td>
+                <td th:text="${info.email}">Email</td>
+                <td>
+                    <a th:href="${info.website}"
+                       th:text="${info.website}"
+                       target="_blank">Website</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a th:href="@{/}" class="btn btn-secondary">Back</a>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

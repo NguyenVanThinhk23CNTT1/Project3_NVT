@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách khách hàng</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body style="background:#f2f2f2">
+
+<section class="container mt-4 bg-white p-4 shadow">
+    <h3>DANH SÁCH KHÁCH HÀNG</h3>
+    <hr/>
+
+    <table class="table table-bordered">
+        <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Fullname</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Active</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="c : ${customers}">
+            <td th:text="${c.id}"></td>
+            <td th:text="${c.username}"></td>
+            <td th:text="${c.fullName}"></td>
+            <td th:text="${c.phone}"></td>
+            <td th:text="${c.email}"></td>
+            <td>
+                <span th:text="${c.active} ? 'Yes' : 'No'"></span>
+            </td>
+            <td>
+                <a th:href="@{/customers/edit/{id}(id=${c.id})}">Edit</a> |
+                <a th:href="@{/customers/delete/{id}(id=${c.id})}"
+                   onclick="return confirm('Xóa khách hàng này?')">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="/customers/add-new" class="btn btn-primary">Add New</a>
+</section>
+
+</body>
+</html>

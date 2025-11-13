@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/_layout :: head('Trang chủ')"></head>
+
+<body>
+
+<!-- HEADER -->
+<header th:replace="fragments/_layout :: header"></header>
+
+<!-- CONTENT -->
+<section class="container my-4">
+    <h1>Đây là trang chủ</h1>
+
+    <ul>
+        <li><a th:href="@{/home}">Trang chủ</a></li>
+        <li><a th:href="@{/services}">Dịch vụ</a></li>
+        <li><a th:href="@{/contact}">Liên hệ</a></li>
+    </ul>
+</section>
+
+<!-- FOOTER -->
+<footer th:replace="fragments/_layout :: footer"></footer>
+
+</body>
+</html>
