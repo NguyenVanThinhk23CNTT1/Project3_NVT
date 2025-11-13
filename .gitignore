@@ -71,3 +71,141 @@ Thumbs.db
 
 # Ignore all files from today's lesson (lesson03 and lab03)
 com.nvtdevmaster.lession03/
+
+# Maven build
+/target/
+
+# IDE files
+.idea/
+*.iml
+*.classpath
+*.project
+.settings/
+.vscode/
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Spring Boot local configs
+application-local.properties
+application-local.yml
+.env
+
+# Embedded DB files
+*.h2.db
+*.mv.db
+*.db
+com.nvtdevmaster.lession04//*
+
+Lab 05 – Thymeleaf & Fragments
+
+Nội dung thực hiện:
+
+Tạo layout chung với Thymeleaf Fragment
+
+Tạo các file: head, header, footer, menu
+
+Chèn fragment vào các trang home, about, contact, profile
+
+Sử dụng Bootstrap CDN
+
+Tạo Controller điều hướng các trang
+
+Tạo trang profile hiển thị dữ liệu từ model
+
+Thư mục template:
+
+templates/fragments/_layout.html
+
+templates/home.html
+
+templates/about.html
+
+templates/contact.html
+
+templates/profile.html
+
+
+
+Lab 06 – Spring Boot CRUD (Student & Customer)
+
+Nội dung thực hiện:
+
+Kết nối MySQL bằng Spring Data JPA
+
+Tạo Entity Student, Customer
+
+Tạo DTO cho Student, Customer
+
+Repository kế thừa JpaRepository
+
+Service xử lý CRUD
+
+Controller xử lý request
+
+Tạo giao diện CRUD bằng Thymeleaf:
+
+Danh sách
+
+Thêm
+
+Sửa
+
+Xóa
+
+Thư mục template CRUD:
+
+templates/students/student-list.html
+
+templates/students/student-add.html
+
+templates/students/student-edit.html
+
+templates/customers/customer-list.html
+
+templates/customers/customer-add.html
+
+templates/customers/customer-edit.html
+
+3. Cấu hình MySQL (application.properties)
+
+spring.application.name=com.nvtdevmaster.lesson06
+server.port=8081
+spring.datasource.url=jdbc:mysql://localhost:3306/lesson06db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=Thinhhn2005@
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+4. Tạo Database
+
+Trong MySQL Workbench chạy lệnh:
+
+CREATE DATABASE lesson06db;
+
+5. Cách chạy project
+
+Mở IntelliJ
+
+Mở Terminal
+
+Gõ lệnh:
+mvn spring-boot:run
+
+Truy cập trình duyệt:
+
+Trang Home (Lab05):
+http://localhost:8081/home
+
+CRUD Student (Lab06):
+http://localhost:8081/students
+
+CRUD Customer (Lab06):
+http://localhost:8081/customers
