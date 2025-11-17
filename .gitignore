@@ -209,3 +209,40 @@ http://localhost:8081/students
 
 CRUD Customer (Lab06):
 http://localhost:8081/customers
+
+Lesson07 – CRUD Category & Product (One-To-Many)
+
+Tạo 2 entity:
+✔ Category(id, categoryName, categoryStatus)
+✔ Product(id, name, imageUrl, quantity, price, content, status, categoryId)
+
+Thiết lập quan hệ One-To-Many / Many-To-One giữa Category và Product.
+
+Tạo controller + service + repository cho cả 2 bảng.
+
+Thiết kế giao diện CRUD đầy đủ:
+✔ category-list/form
+✔ product-list/form
+
+Khắc phục lỗi Thymeleaf binding Category → Product.
+
+Chạy project thành công với chức năng:
+✔ Thêm / sửa / xóa category
+✔ Thêm / sửa / xóa product
+✔ Product chọn category từ dropdown.
+
+ExamPractical07 – CRUD Category & Book
+
+Tạo project mới theo yêu cầu đề thi.
+
+Tạo entity:
+✔ Category(id, name, status)
+✔ Book(id, name, imgUrl, qty, price, yearRelease, author, status, categoryId)
+
+Thiết lập foreign key book → category.
+
+Tạo CRUD đầy đủ cho Category và Book.
+
+Xây dựng giao diện đẹp bằng Bootstrap + Thymeleaf.
+
+Chạy thực tế, đảm bảo không lỗi 500, dữ liệu lưu chính xác.
