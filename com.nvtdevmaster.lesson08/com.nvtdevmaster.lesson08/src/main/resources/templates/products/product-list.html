@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Product List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f3f4f6;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .table>thead {
+            background: #1e40af;
+            color: white;
+        }
+
+        .badge-config {
+            background: #f59e0b;
+            color: white;
+            margin-right: 5px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .btn-add {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="card-title">Product Management</h2>
+                <a href="/products/new" class="btn btn-add">+ Add New Product</a>
+            </div>
+
+            <table class="table table-bordered table-hover shadow-sm">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th style="width: 30%">Configuration</th>
+                    <th style="width: 15%">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="p : ${products}">
+                    <td th:text="${p.name}" class="fw-semibold"></td>
+                    <td th:text="${p.quantity}"></td>
+                    <td th:text="${p.price}"></td>
+
+                    <td>
+                        <div th:each="c : ${p.configs}">
+                            <span class="badge-config"
+                                  th:text="${c.configuration.name + ': ' + c.value}">
+                            </span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-sm btn-primary"
+                           th:href="@{/products/edit/{id}(id=${p.id})}">
+                            Edit
+                        </a>
+
+                        <a class="btn btn-sm btn-danger"
+                           th:href="@{/products/delete/{id}(id=${p.id})}"
+                           onclick="return confirm('Delete this product?')">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

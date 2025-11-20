@@ -246,3 +246,49 @@ Tạo CRUD đầy đủ cho Category và Book.
 Xây dựng giao diện đẹp bằng Bootstrap + Thymeleaf.
 
 Chạy thực tế, đảm bảo không lỗi 500, dữ liệu lưu chính xác.
+
+
+# ----------- Java -----------
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+
+# ----------- Maven -----------
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+
+# ----------- IntelliJ IDEA -----------
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ----------- Logs -----------
+logs/
+*.log
+
+# ----------- OS Files -----------
+.DS_Store
+Thumbs.db
+
+# ----------- Spring Boot -----------
+# Temporary files created by Spring
+spring.log
+
+# ----------- Uploaded images (if you don't want to push uploaded files) -----------
+src/main/resources/static/images/
+
+# Uncomment nếu bạn có upload nhiều file lớn
+# /uploads/
+
+# ----------- Env / Credentials -----------
+application.properties
+application.yml
+
+# Nếu bạn muốn public code nhưng ẩn thông tin DB/mật khẩu
+# Thì tạo 1 file application-example.properties để hướng dẫn
+
