@@ -35,16 +35,14 @@
             <td th:text="${book.code}"></td>
             <td th:text="${book.name}"></td>
 
-            <!-- Ảnh -->
             <td>
-                <img th:src="${book.imgUrl}"
+                <img th:src="@{${book.imgUrl}}"
                      style="width:60px;height:60px;object-fit:cover;border:1px solid #ddd;">
             </td>
 
             <td th:text="${book.quantity}"></td>
             <td th:text="${book.price}"></td>
 
-            <!-- Authors -->
             <td>
                 <span th:each="a : ${book.authors}"
                       class="badge bg-warning text-dark me-1"
@@ -52,7 +50,9 @@
             </td>
 
             <td>
-                <a th:href="@{/books/edit/{id}(id=${book.id})}" class="btn btn-primary btn-sm me-1">Edit</a>
+                <a th:href="@{/books/edit/{id}(id=${book.id})}"
+                   class="btn btn-primary btn-sm me-1">Edit</a>
+
                 <a th:href="@{/books/delete/{id}(id=${book.id})}"
                    onclick="return confirm('Are you sure?')"
                    class="btn btn-danger btn-sm">Delete</a>
