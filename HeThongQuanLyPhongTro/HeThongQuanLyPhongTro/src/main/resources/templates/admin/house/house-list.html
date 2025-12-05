@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-layout :: body}">
+
+<div th:fragment="content">
+
+    <h2 class="mb-3">🏠 Danh sách nhà trọ</h2>
+
+    <a class="btn btn-primary mb-3" href="/admin/houses/add">+ Thêm nhà trọ</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Tên nhà</th>
+            <th>Địa chỉ</th>
+            <th>SDT</th>
+            <th>Ảnh</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="h : ${houses}">
+            <td th:text="${h.id}"></td>
+            <td th:text="${h.name}"></td>
+            <td th:text="${h.address}"></td>
+            <td th:text="${h.phone}"></td>
+            <td><img th:src="${h.image}" class="img-thumbnail" style="width:80px;"></td>
+
+            <td>
+                <a class="btn btn-warning btn-sm" th:href="'/admin/houses/edit/' + ${h.id}">Sửa</a>
+                <a class="btn btn-danger btn-sm"
+                   th:href="'/admin/houses/delete/' + ${h.id}"
+                   onclick="return confirm('Xóa nhà trọ này?')">Xóa</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</html>

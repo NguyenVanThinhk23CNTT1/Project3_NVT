@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin - Chi tiết hợp đồng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+
+    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
+
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Chi tiết hợp đồng</h4>
+            <div class="text-muted small" th:text="'HĐ: ' + ${contract.contractCode} + ' | Status: ' + ${contract.status}"></div>
+        </div>
+        <a class="btn btn-outline-secondary" href="/admin/contracts">← Quay lại</a>
+    </div>
+
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-3"><b>Room ID:</b> <span th:text="${contract.roomId}"></span></div>
+                <div class="col-md-3"><b>Tenant đại diện ID:</b> <span th:text="${contract.tenantId}"></span></div>
+                <div class="col-md-3"><b>Start:</b> <span th:text="${contract.startDate}"></span></div>
+                <div class="col-md-3"><b>End:</b> <span th:text="${contract.endDate}"></span></div>
+                <div class="col-md-3"><b>Giá thuê:</b> <span th:text="${contract.rentPrice}"></span></div>
+                <div class="col-md-3"><b>Tiền cọc:</b> <span th:text="${contract.deposit}"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add member -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">Thêm người ở ghép</h6>
+
+            <form class="row g-3" method="post" th:action="@{'/admin/contracts/' + ${contract.id} + '/add-member'}"
+                  th:object="${newMember}">
+                <div class="col-md-4">
+                    <label class="form-label">Chọn khách</label>
+                    <select class="form-select" th:field="*{tenantId}" required>
+                        <option value="">-- chọn --</option>
+                        <option th:each="t : ${tenants}" th:value="${t.id}" th:text="${t.fullName + ' - ' + t.phone}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Quan hệ</label>
+                    <input class="form-control" th:field="*{relation}" placeholder="Bạn/Anh em...">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Ngày vào</label>
+                    <input type="date" class="form-control" th:field="*{moveInDate}">
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-primary">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member list -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h6 class="mb-3">Danh sách ở ghép</h6>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>Tenant ID</th>
+                        <th>Quan hệ</th>
+                        <th>Ngày vào</th>
+                        <th>Ngày ra</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="m : ${members}">
+                        <td th:text="${m.tenantId}"></td>
+                        <td th:text="${m.relation}"></td>
+                        <td th:text="${m.moveInDate}"></td>
+                        <td th:text="${m.moveOutDate}"></td>
+                        <td class="text-end">
+                            <form th:if="${m.moveOutDate == null}"
+                                  th:action="@{'/admin/contracts/' + ${contract.id} + '/remove-member/' + ${m.tenantId}}"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('Cho người này rời phòng?');">
+                                <button class="btn btn-sm btn-outline-danger">Rời phòng</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(members)}">
+                        <td colspan="5" class="text-center text-muted">Chưa có thành viên</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-muted small mt-2">
+                Tạm thời đang hiển thị Tenant ID để làm nhanh. Sau này mình đổi sang hiển thị tên khách.
+            </div>
+        </div>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

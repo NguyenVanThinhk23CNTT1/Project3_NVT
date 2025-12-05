@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Admin - Feedbacks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+
+    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Phản ánh / Sự cố</h4>
+            <div class="text-muted small">Admin xử lý phản ánh</div>
+        </div>
+        <a class="btn btn-outline-secondary" href="/admin">← Dashboard</a>
+    </div>
+
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>RoomId</th>
+                        <th>TenantId</th>
+                        <th>Tiêu đề</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="f : ${feedbacks}">
+                        <td th:text="${f.id}"></td>
+                        <td th:text="${f.roomId}"></td>
+                        <td th:text="${f.tenantId}"></td>
+                        <td>
+                            <div class="fw-semibold" th:text="${f.title}"></div>
+                            <div class="text-muted small" th:text="${f.content}"></div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary" th:if="${f.status.name()=='NEW'}">NEW</span>
+                            <span class="badge bg-warning text-dark" th:if="${f.status.name()=='IN_PROGRESS'}">IN_PROGRESS</span>
+                            <span class="badge bg-success" th:if="${f.status.name()=='DONE'}">DONE</span>
+                        </td>
+                        <td th:text="${f.createdAt}"></td>
+                        <td class="text-end">
+                            <form method="post" th:action="@{'/admin/feedbacks/status/' + ${f.id}}" class="d-inline">
+                                <select class="form-select form-select-sm d-inline-block" style="width: 160px" name="status">
+                                    <option th:each="s: ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s==f.status}"></option>
+                                </select>
+                                <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                            </form>
+
+                            <form method="post" th:action="@{'/admin/feedbacks/delete/' + ${f.id}}"
+                                  class="d-inline" onsubmit="return confirm('Xóa phản ánh này?');">
+                                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(feedbacks)}">
+                        <td colspan="7" class="text-center text-muted">Chưa có phản ánh</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-muted small mt-2">
+                Tạm hiển thị roomId/tenantId để làm nhanh. Sau sẽ map ra tên phòng/tên khách.
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin - Hóa đơn</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+
+    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Quản lý hóa đơn</h4>
+            <div class="text-muted small">Tạo hóa đơn từ hợp đồng + chỉ số điện/nước</div>
+        </div>
+        <a class="btn btn-outline-secondary" href="/admin">← Dashboard</a>
+    </div>
+
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+    <!-- Form tạo bill -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">Tạo hóa đơn</h6>
+            <form class="row g-3" method="post" action="/admin/bills/create">
+                <div class="col-md-5">
+                    <label class="form-label">Hợp đồng *</label>
+                    <select class="form-select" name="contractId" required>
+                        <option value="">-- chọn --</option>
+                        <option th:each="c : ${contracts}" th:value="${c.id}"
+                                th:text="${c.contractCode + ' (roomId=' + c.roomId + ')'}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Tháng *</label>
+                    <input type="number" class="form-control" name="billMonth" min="1" max="12" required>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Năm *</label>
+                    <input type="number" class="form-control" name="billYear" min="2000" required>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-primary">Tạo hóa đơn</button>
+                </div>
+            </form>
+
+            <div class="text-muted small mt-2">
+                Lưu ý: phải nhập Meter (điện/nước) trước thì tạo bill mới được.
+            </div>
+        </div>
+    </div>
+
+    <!-- List bills -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h6 class="mb-3">Danh sách hóa đơn</h6>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Contract</th>
+                        <th>Room</th>
+                        <th>Tháng/Năm</th>
+                        <th>Tổng tiền</th>
+                        <th>Status</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b : ${bills}">
+                        <td th:text="${b.id}"></td>
+                        <td th:text="${b.contractId}"></td>
+                        <td th:text="${b.roomId}"></td>
+                        <td th:text="${b.billMonth + '/' + b.billYear}"></td>
+                        <td th:text="${b.totalAmount}"></td>
+                        <td>
+                            <span class="badge bg-warning text-dark" th:if="${b.status.name()=='UNPAID'}">UNPAID</span>
+                            <span class="badge bg-success" th:if="${b.status.name()=='PAID'}">PAID</span>
+                            <span class="badge bg-danger" th:if="${b.status.name()=='OVERDUE'}">OVERDUE</span>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{'/admin/bills/' + ${b.id}}">Chi tiết</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(bills)}">
+                        <td colspan="7" class="text-center text-muted">Chưa có hóa đơn</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-muted small mt-2">
+                Tạm thời hiển thị ID để làm nhanh. Sau này sẽ hiển thị mã phòng, tên khách…
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

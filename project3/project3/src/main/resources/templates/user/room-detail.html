@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Chi tiết phòng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar bg-white border-bottom">
+    <div class="container">
+        <a class="navbar-brand fw-semibold" href="/">← Quay lại</a>
+        <div class="ms-auto d-flex gap-2">
+            <a class="btn btn-outline-primary btn-sm" href="/bills">Tra hóa đơn</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/feedback">Phản ánh</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4" style="max-width: 900px">
+
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h4 class="mb-0" th:text="${room.roomCode + ' - ' + room.roomName}"></h4>
+            <div class="text-muted" th:text="'Trạng thái: ' + ${room.status}"></div>
+
+            <hr>
+            <div class="row g-2">
+                <div class="col-md-4"><b>Giá thuê:</b> <span th:text="${room.rentPrice}"></span></div>
+                <div class="col-md-4"><b>Tiền cọc:</b> <span th:text="${room.depositDefault}"></span></div>
+                <div class="col-md-4"><b>Diện tích:</b> <span th:text="${room.area}"></span></div>
+                <div class="col-md-4"><b>Tầng:</b> <span th:text="${room.floor}"></span></div>
+                <div class="col-md-4"><b>Tối đa:</b> <span th:text="${room.maxPeople}"></span> người</div>
+            </div>
+
+            <div class="mt-2">
+                <b>Mô tả:</b>
+                <div class="text-muted" th:text="${room.description}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h6 class="mb-3">Gửi yêu cầu đặt thuê</h6>
+
+            <form method="post" th:action="@{'/rooms/' + ${room.id} + '/book'}" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Họ tên *</label>
+                    <input class="form-control" name="fullName" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Số điện thoại *</label>
+                    <input class="form-control" name="phone" required>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary">Gửi yêu cầu</button>
+                </div>
+            </form>
+
+            <div class="text-muted small mt-2">
+                Hiện tại chưa có login nên hệ thống chỉ ghi nhận “yêu cầu”. Sau khi làm Login, mình sẽ lưu vào bảng booking_requests.
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

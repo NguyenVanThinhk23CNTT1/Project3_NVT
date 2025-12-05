@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-layout :: body}">
+
+<div th:fragment="content">
+
+    <h2 class="mb-3">Danh sách hóa đơn</h2>
+
+    <table class="table table-hover table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Phòng</th>
+            <th>Tháng</th>
+            <th>Năm</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="b : ${bills}">
+            <td th:text="${b.id}"></td>
+            <td th:text="${b.room.code}"></td>
+            <td th:text="${b.month}"></td>
+            <td th:text="${b.year}"></td>
+            <td th:text="${b.totalAmount}"></td>
+            <td>
+                <span class="badge bg-info" th:text="${b.status}"></span>
+            </td>
+            <td>
+                <a th:href="@{'/admin/bills/detail/' + ${b.id}}"
+                   class="btn btn-info btn-sm">Xem</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</html>

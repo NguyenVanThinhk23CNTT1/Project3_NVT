@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/admin-layout :: body}">
+
+<div th:fragment="content">
+
+    <h2 class="mb-3">Chi tiết hóa đơn</h2>
+
+    <div class="card shadow-sm p-3">
+        <p><strong>ID:</strong> <span th:text="${bill.id}"></span></p>
+        <p><strong>Phòng:</strong> <span th:text="${bill.room.code}"></span></p>
+        <p><strong>Tháng:</strong> <span th:text="${bill.month}"></span></p>
+        <p><strong>Năm:</strong> <span th:text="${bill.year}"></span></p>
+        <p><strong>Số điện:</strong> <span th:text="${bill.electricUsed}"></span></p>
+        <p><strong>Số nước:</strong> <span th:text="${bill.waterUsed}"></span></p>
+        <p><strong>Tổng tiền:</strong> <span th:text="${bill.totalAmount}"></span></p>
+    </div>
+
+    <a href="/admin/bills" class="btn btn-secondary mt-3">⬅ Quay lại</a>
+
+</div>
+</html>

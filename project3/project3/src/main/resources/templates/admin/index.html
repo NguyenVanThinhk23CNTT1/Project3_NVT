@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin - Quản lý nhà trọ</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        body { background: #f6f7fb; }
+        .sidebar { width: 260px; min-height: 100vh; background: #111827; }
+        .sidebar a { color: #e5e7eb; text-decoration: none; }
+        .sidebar a:hover { color: #fff; }
+        .brand { color: #fff; font-weight: 700; }
+        .nav-pill { border-radius: 12px; padding: 10px 12px; }
+        .nav-pill.active { background: rgba(255,255,255,.12); }
+        .card { border: 0; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+    </style>
+</head>
+
+<body>
+<div class="d-flex">
+    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar p-3">
+        <div class="mb-4">
+            <div class="brand fs-5"><i class="bi bi-building"></i> NVT Admin</div>
+            <div class="text-white-50 small">Quản lý nhà trọ</div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a class="nav-pill active" href="/admin"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+            <a class="nav-pill" href="/admin/rooms"><i class="bi bi-house-door me-2"></i> Phòng</a>
+            <a class="nav-pill" href="/admin/tenants"><i class="bi bi-people me-2"></i> Khách thuê</a>
+            <a class="nav-pill" href="/admin/contracts"><i class="bi bi-file-earmark-text me-2"></i> Hợp đồng</a>
+            <a class="nav-pill" href="/admin/meters"><i class="bi bi-lightning-charge me-2"></i> Điện nước</a>
+            <a class="nav-pill" href="/admin/bills"><i class="bi bi-receipt me-2"></i> Hóa đơn</a>
+            <a class="nav-pill" href="/admin/feedbacks"><i class="bi bi-wrench-adjustable me-2"></i> Phản ánh</a>
+            <a class="nav-pill" href="/admin/hostels"><i class="bi bi-wrench-adjustable me-2"></i>Nhà trọ</a>
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="text-white-50 small">Chưa bật đăng nhập (sẽ làm cuối)</div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-grow-1">
+        <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between">
+            <div>
+                <div class="fw-semibold">Dashboard</div>
+                <div class="text-muted small">Tổng quan hệ thống</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary btn-sm" href="/"><i class="bi bi-globe"></i> User site</a>
+                <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Thêm mới</button>
+            </div>
+        </header>
+
+        <div class="p-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Phòng trống</div>
+                                <div class="fs-4 fw-bold">--</div>
+                            </div>
+                            <div class="fs-3 text-primary"><i class="bi bi-house"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Đang thuê</div>
+                                <div class="fs-4 fw-bold">--</div>
+                            </div>
+                            <div class="fs-3 text-success"><i class="bi bi-person-check"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Hóa đơn chưa trả</div>
+                                <div class="fs-4 fw-bold">--</div>
+                            </div>
+                            <div class="fs-3 text-warning"><i class="bi bi-receipt-cutoff"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-muted small">Phản ánh mới</div>
+                                <div class="fs-4 fw-bold">--</div>
+                            </div>
+                            <div class="fs-3 text-danger"><i class="bi bi-bell"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4 p-3">
+                <div class="fw-semibold mb-2">Gợi ý luồng làm nhanh</div>
+                <ol class="text-muted mb-0">
+                    <li>Tạo module Phòng (rooms): list + add + edit</li>
+                    <li>Tạo module Khách thuê (tenants)</li>
+                    <li>Tạo module Hợp đồng (contracts)</li>
+                    <li>Tạo module Điện nước (meter_readings)</li>
+                    <li>Tạo module Hóa đơn (bills, payments)</li>
+                    <li>Cuối cùng mới gắn Login Admin (Spring Security)</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

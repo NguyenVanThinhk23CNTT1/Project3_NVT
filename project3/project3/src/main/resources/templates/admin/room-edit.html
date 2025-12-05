@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin - Sửa phòng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+
+    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Sửa phòng</h4>
+            <div class="text-muted small" th:text="'ID: ' + ${room.id}"></div>
+        </div>
+        <a class="btn btn-outline-secondary" href="/admin/rooms">← Quay lại</a>
+    </div>
+
+    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form class="row g-3"
+                  method="post"
+                  th:action="@{'/admin/rooms/update/' + ${room.id}}"
+                  th:object="${room}"
+                  enctype="multipart/form-data">
+
+                <!-- Nhà trọ -->
+                <div class="col-md-6">
+                    <label class="form-label">Nhà trọ *</label>
+                    <select class="form-select" th:field="*{hostelId}" required>
+                        <option value="">-- Chọn nhà trọ --</option>
+                        <option th:each="h : ${hostels}"
+                                th:value="${h.id}"
+                                th:text="${h.name + ' - ' + h.address}">
+                        </option>
+                    </select>
+                    <div class="form-text">Mỗi phòng thuộc 1 nhà trọ.</div>
+                </div>
+
+                <!-- Ảnh phòng -->
+                <div class="col-md-6">
+                    <label class="form-label">Ảnh phòng</label>
+                    <input class="form-control" type="file" name="imageFile" accept="image/*">
+                    <div class="form-text">Không chọn ảnh mới thì giữ ảnh cũ.</div>
+
+                    <div class="mt-2" th:if="${room.imageUrl}">
+                        <div class="text-muted small mb-1">Ảnh hiện tại:</div>
+                        <img th:src="${room.imageUrl}" class="rounded border"
+                             style="width:180px;height:120px;object-fit:cover;">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Mã phòng *</label>
+                    <input class="form-control" th:field="*{roomCode}" required>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Tên phòng</label>
+                    <input class="form-control" th:field="*{roomName}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Tầng</label>
+                    <input type="number" class="form-control" th:field="*{floor}" min="1">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Số người</label>
+                    <input type="number" class="form-control" th:field="*{maxPeople}" min="1">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Giá thuê *</label>
+                    <input type="number" class="form-control" th:field="*{rentPrice}" required min="1">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Tiền cọc</label>
+                    <input type="number" class="form-control" th:field="*{depositDefault}" min="0">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Diện tích (m2)</label>
+                    <input type="number" class="form-control" step="0.01" th:field="*{area}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Mô tả</label>
+                    <textarea class="form-control" rows="2" th:field="*{description}"></textarea>
+                </div>
+
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary">Lưu thay đổi</button>
+                    <a class="btn btn-outline-secondary" href="/admin/rooms">Hủy</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
