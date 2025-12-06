@@ -6,7 +6,6 @@ import comk23cnt1.nvt.project3.nvt_entity.NvtContractMember;
 import java.util.List;
 
 public interface NvtContractService {
-
     List<NvtContract> findAll();
     NvtContract findById(Long id);
 
@@ -18,4 +17,7 @@ public interface NvtContractService {
     void removeMember(Long contractId, Long tenantId);
 
     void endContract(Long contractId);
+
+    void resumeContract(Long contractId); // mới
 }
+

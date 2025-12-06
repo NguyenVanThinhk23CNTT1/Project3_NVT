@@ -7,6 +7,9 @@ import java.util.List;
 public interface NvtHostelService {
     List<NvtHostel> findAll();
     NvtHostel findById(Long id);
+
     NvtHostel create(NvtHostel hostel);
+    NvtHostel update(Long id, NvtHostel hostel);
+
     void delete(Long id);
 }

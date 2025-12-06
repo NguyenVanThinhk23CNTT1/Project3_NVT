@@ -29,7 +29,6 @@ public class NvtContractServiceImpl implements NvtContractService {
     @Override
     @Transactional(readOnly = true)
     public List<NvtContract> findAll() {
-        // ưu tiên sort mới nhất
         return contractRepo.findAllByOrderByIdDesc();
     }
 
@@ -46,12 +45,14 @@ public class NvtContractServiceImpl implements NvtContractService {
         if (c.getRoomId() == null) throw new IllegalArgumentException("Chưa chọn phòng");
         if (c.getTenantId() == null) throw new IllegalArgumentException("Chưa chọn người đại diện");
         if (c.getStartDate() == null) throw new IllegalArgumentException("Chưa nhập ngày bắt đầu");
-        if (c.getRentPrice() == null) throw new IllegalArgumentException("Chưa nhập giá thuê");
 
+        // UI của bạn ghi: rentPrice/deposit có thể bỏ trống (lấy theo phòng)
+        // Hiện chưa inject RoomService nên tạm để default 0 để không crash.
+        if (c.getRentPrice() == null) c.setRentPrice(BigDecimal.ZERO);
         if (c.getDeposit() == null) c.setDeposit(BigDecimal.ZERO);
+
         if (c.getStatus() == null) c.setStatus(NvtContract.ContractStatus.ACTIVE);
 
-        // auto contractCode nếu chưa có
         if (c.getContractCode() == null || c.getContractCode().trim().isBlank()) {
             c.setContractCode(genCode());
         } else {
@@ -59,26 +60,35 @@ public class NvtContractServiceImpl implements NvtContractService {
         }
 
         if (contractRepo.existsByContractCode(c.getContractCode())) {
-            // tránh trùng code, generate lại
             c.setContractCode(genCode());
         }
 
-        // validate endDate
         if (c.getEndDate() != null && c.getEndDate().isBefore(c.getStartDate())) {
             throw new IllegalArgumentException("Ngày kết thúc không được trước ngày bắt đầu");
         }
 
         NvtContract saved = contractRepo.save(c);
 
-        // auto add đại diện vào members (is_primary=1)
-        NvtContractMember primary = new NvtContractMember();
-        primary.setContractId(saved.getId());
-        primary.setTenantId(saved.getTenantId());
-        primary.setIsPrimary(true);
-        primary.setMoveInDate(c.getStartDate() != null ? c.getStartDate() : LocalDate.now());
-        primary.setRelation("Đại diện");
+        // Auto add đại diện vào members (primary) nếu chưa có
         if (!memberRepo.existsByContractIdAndTenantId(saved.getId(), saved.getTenantId())) {
+            NvtContractMember primary = new NvtContractMember();
+            primary.setContractId(saved.getId());
+            primary.setTenantId(saved.getTenantId());
+            primary.setIsPrimary(true);
+            primary.setMoveInDate(saved.getStartDate() != null ? saved.getStartDate() : LocalDate.now());
+            primary.setMoveOutDate(null);
+            primary.setRelation("Đại diện");
             memberRepo.save(primary);
+        } else {
+            // nếu đã có (do dữ liệu cũ), đảm bảo primary chưa bị moveOut khi vừa tạo
+            memberRepo.findByContractIdAndTenantId(saved.getId(), saved.getTenantId())
+                    .ifPresent(m -> {
+                        m.setIsPrimary(true);
+                        m.setMoveOutDate(null);
+                        if (m.getMoveInDate() == null) m.setMoveInDate(saved.getStartDate());
+                        if (m.getRelation() == null || m.getRelation().isBlank()) m.setRelation("Đại diện");
+                        memberRepo.save(m);
+                    });
         }
 
         return saved;
@@ -102,26 +112,35 @@ public class NvtContractServiceImpl implements NvtContractService {
             throw new IllegalArgumentException("Hợp đồng không còn ACTIVE nên không thể thêm người");
         }
 
-        if (memberRepo.existsByContractIdAndTenantId(contractId, m.getTenantId())) {
-            throw new IllegalArgumentException("Người này đã có trong hợp đồng");
+        // Nếu người này đã tồn tại nhưng trước đó đã moveOut => cho vào lại bằng cách set moveOutDate=null
+        var existed = memberRepo.findByContractIdAndTenantId(contractId, m.getTenantId());
+        if (existed.isPresent()) {
+            NvtContractMember ex = existed.get();
+            if (ex.getMoveOutDate() == null) {
+                throw new IllegalArgumentException("Người này đã có trong hợp đồng");
+            }
+            // cho vào lại
+            ex.setMoveOutDate(null);
+            if (m.getMoveInDate() != null) ex.setMoveInDate(m.getMoveInDate());
+            else ex.setMoveInDate(LocalDate.now());
+
+            if (m.getRelation() != null) ex.setRelation(m.getRelation());
+            memberRepo.save(ex);
+            return;
         }
 
-        // set keys
         m.setContractId(contractId);
-
         if (m.getIsPrimary() == null) m.setIsPrimary(false);
 
-        // default moveInDate
         if (m.getMoveInDate() == null) {
             m.setMoveInDate(contract.getStartDate() != null ? contract.getStartDate() : LocalDate.now());
         }
 
-        // không cho set primary nếu đã có primary khác (để đơn giản)
         if (Boolean.TRUE.equals(m.getIsPrimary())) {
-            // nếu muốn đổi primary thì phải xử lý thêm, ở đây chặn luôn cho chắc
             throw new IllegalArgumentException("Không cho thêm primary mới. Đại diện đã được set khi tạo hợp đồng.");
         }
 
+        m.setMoveOutDate(null);
         memberRepo.save(m);
     }
 
@@ -132,31 +151,77 @@ public class NvtContractServiceImpl implements NvtContractService {
 
         NvtContract contract = findById(contractId);
 
-        // không cho remove đại diện
-        if (contract.getTenantId() != null && contract.getTenantId().equals(tenantId)) {
-            throw new IllegalArgumentException("Không thể cho người đại diện rời phòng. Hãy đổi đại diện trước (nâng cấp sau).");
-        }
-
         NvtContractMember cm = memberRepo.findByContractIdAndTenantId(contractId, tenantId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người này trong hợp đồng"));
 
-        // set move_out_date (soft logic) rồi xóa luôn theo yêu cầu hiện tại (đơn giản)
-        // Nếu muốn lưu lịch sử thì đừng delete, chỉ update moveOutDate.
-        memberRepo.delete(cm);
+        if (cm.getMoveOutDate() != null) {
+            throw new IllegalArgumentException("Người này đã rời phòng trước đó");
+        }
+
+        boolean isRepresentative = contract.getTenantId() != null && contract.getTenantId().equals(tenantId);
+
+        // RULE: chỉ cấm đại diện rời khi hợp đồng còn ACTIVE
+        if (isRepresentative && contract.getStatus() == NvtContract.ContractStatus.ACTIVE) {
+            throw new IllegalArgumentException("Không thể cho người đại diện rời phòng khi hợp đồng còn ACTIVE. (Muốn đổi đại diện cần chức năng nâng cấp).");
+        }
+
+        // Soft remove: set moveOutDate
+        cm.setMoveOutDate(LocalDate.now());
+        memberRepo.save(cm);
     }
 
     @Override
     public void endContract(Long contractId) {
         NvtContract c = findById(contractId);
+
         if (c.getStatus() == NvtContract.ContractStatus.ENDED) return;
+        if (c.getStatus() == NvtContract.ContractStatus.CANCELLED) {
+            throw new IllegalArgumentException("Hợp đồng đã CANCELLED nên không thể end");
+        }
 
         c.setStatus(NvtContract.ContractStatus.ENDED);
         if (c.getEndDate() == null) c.setEndDate(LocalDate.now());
         contractRepo.save(c);
+
+        // Chốt luôn danh sách ở ghép: ai chưa có ngày ra thì set ngày ra = endDate
+        LocalDate out = c.getEndDate();
+        List<NvtContractMember> ms = memberRepo.findByContractIdOrderByTenantIdAsc(contractId);
+        for (NvtContractMember m : ms) {
+            if (m.getMoveOutDate() == null) {
+                m.setMoveOutDate(out);
+                memberRepo.save(m);
+            }
+        }
+    }
+
+    @Override
+    public void resumeContract(Long contractId) {
+        NvtContract c = findById(contractId);
+
+        if (c.getStatus() == NvtContract.ContractStatus.ACTIVE) return;
+        if (c.getStatus() == NvtContract.ContractStatus.CANCELLED) {
+            throw new IllegalArgumentException("Hợp đồng đã CANCELLED nên không thể tiếp tục");
+        }
+
+        // Mở lại
+        c.setStatus(NvtContract.ContractStatus.ACTIVE);
+        c.setEndDate(null); // nếu bạn muốn giữ endDate thì bỏ dòng này
+        contractRepo.save(c);
+
+        // đảm bảo đại diện vẫn đang "ở trong phòng"
+        if (c.getTenantId() != null) {
+            memberRepo.findByContractIdAndTenantId(contractId, c.getTenantId())
+                    .ifPresent(m -> {
+                        m.setIsPrimary(true);
+                        m.setMoveOutDate(null);
+                        if (m.getMoveInDate() == null) m.setMoveInDate(LocalDate.now());
+                        if (m.getRelation() == null || m.getRelation().isBlank()) m.setRelation("Đại diện");
+                        memberRepo.save(m);
+                    });
+        }
     }
 
     private String genCode() {
-        // VD: CT-8F3A1B
         return "CT-" + UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
     }
 }
