@@ -9,13 +9,14 @@
 <body class="bg-light">
 
 <div class="container py-4">
-
     <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0">Chi tiết hợp đồng</h4>
-            <div class="text-muted small" th:text="'HĐ: ' + ${contract.contractCode} + ' | Status: ' + ${contract.status}"></div>
+            <div class="text-muted small"
+                 th:text="'HĐ: ' + ${contract.contractCode} + ' | Status: ' + ${contract.status}">
+            </div>
         </div>
         <a class="btn btn-outline-secondary" href="/admin/contracts">← Quay lại</a>
     </div>
@@ -28,62 +29,60 @@
         <div class="card-body">
             <div class="row g-2">
                 <div class="col-md-6">
-                    <div class="fw-semibold">Phòng</div>
-                    <!-- ưu tiên show roomText nếu controller truyền -->
-                    <div>
-                        <span th:if="${roomText != null}" th:text="${roomText}"></span>
-                        <span th:if="${roomText == null}">
-                            <b>ID:</b> <span th:text="${contract.roomId}"></span>
-                        </span>
-                    </div>
+                    <b>Phòng:</b>
+                    <span th:text="${roomText != null ? roomText : contract.roomId}"></span>
                 </div>
-
                 <div class="col-md-6">
-                    <div class="fw-semibold">Khách đại diện</div>
-                    <div>
-                        <span th:if="${repTenantText != null}" th:text="${repTenantText}"></span>
-                        <span th:if="${repTenantText == null}">
-                            <b>ID:</b> <span th:text="${contract.tenantId}"></span>
-                        </span>
-                    </div>
+                    <b>Khách đại diện:</b>
+                    <span th:text="${repTenantText != null ? repTenantText : contract.tenantId}"></span>
                 </div>
 
                 <div class="col-md-3"><b>Start:</b> <span th:text="${contract.startDate}"></span></div>
                 <div class="col-md-3"><b>End:</b> <span th:text="${contract.endDate}"></span></div>
                 <div class="col-md-3"><b>Giá thuê:</b> <span th:text="${contract.rentPrice}"></span></div>
                 <div class="col-md-3"><b>Tiền cọc:</b> <span th:text="${contract.deposit}"></span></div>
+            </div>
 
-                <div class="col-12" th:if="${contract.note != null}">
-                    <b>Ghi chú:</b> <span th:text="${contract.note}"></span>
-                </div>
+            <div class="mt-3 d-flex gap-2">
+                <!-- END -->
+                <form th:if="${contract.status.name()=='ACTIVE'}"
+                      th:action="@{'/admin/contracts/' + ${contract.id} + '/end'}"
+                      method="post"
+                      onsubmit="return confirm('Kết thúc hợp đồng này?');">
+                    <button class="btn btn-outline-danger btn-sm">Kết thúc hợp đồng</button>
+                </form>
+
+                <!-- RESUME -->
+                <form th:if="${contract.status.name()=='ENDED'}"
+                      th:action="@{'/admin/contracts/' + ${contract.id} + '/resume'}"
+                      method="post"
+                      onsubmit="return confirm('Tiếp tục hợp đồng này?');">
+                    <button class="btn btn-outline-success btn-sm">Tiếp tục hợp đồng</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Add member: chỉ khi ACTIVE -->
-    <div class="card border-0 shadow-sm mb-4">
+    <!-- Add member (chỉ cho khi ACTIVE) -->
+    <div class="card border-0 shadow-sm mb-4" th:if="${contract.status.name()=='ACTIVE'}">
         <div class="card-body">
             <h6 class="mb-3">Thêm người ở ghép</h6>
 
-            <div th:if="${contract.status.name() != 'ACTIVE'}" class="text-muted small">
-                Hợp đồng không còn <b>ACTIVE</b> nên không thể thêm người ở ghép.
-            </div>
-
-            <form th:if="${contract.status.name() == 'ACTIVE'}"
-                  class="row g-3"
-                  method="post"
+            <form class="row g-3" method="post"
                   th:action="@{'/admin/contracts/' + ${contract.id} + '/add-member'}"
                   th:object="${newMember}">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <label class="form-label">Chọn khách</label>
                     <select class="form-select" th:field="*{tenantId}" required>
                         <option value="">-- chọn --</option>
-                        <option th:each="t : ${tenants}" th:value="${t.id}"
-                                th:text="${t.fullName + ' - ' + t.phone}"></option>
+                        <option th:each="t : ${tenants}"
+                                th:value="${t.id}"
+                                th:text="${t.fullName + ' - ' + t.phone}">
+                        </option>
                     </select>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Quan hệ</label>
                     <input class="form-control" th:field="*{relation}" placeholder="Bạn/Anh em...">
                 </div>
@@ -109,35 +108,28 @@
                 <table class="table table-hover align-middle">
                     <thead>
                     <tr>
-                        <th>Khách thuê</th>
+                        <th>Khách</th>
                         <th>Quan hệ</th>
                         <th>Ngày vào</th>
                         <th>Ngày ra</th>
+                        <th>Primary</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="m : ${members}">
-                        <td>
-                            <!-- ưu tiên show tenant text nếu controller truyền memberTenantMap -->
-                            <span th:if="${memberTenantMap != null and memberTenantMap.containsKey(m.tenantId)}"
-                                  th:text="${memberTenantMap.get(m.tenantId)}"></span>
-                            <span th:unless="${memberTenantMap != null and memberTenantMap.containsKey(m.tenantId)}"
-                                  th:text="${m.tenantId}"></span>
-
-                            <span class="badge text-bg-primary ms-2"
-                                  th:if="${m.isPrimary != null and m.isPrimary}">
-                                Đại diện
-                            </span>
-                        </td>
-
+                        <!-- ✅ hiển thị tên khách theo memberTenantMap -->
+                        <td th:text="${memberTenantMap != null ? memberTenantMap[m.tenantId] : m.tenantId}"></td>
                         <td th:text="${m.relation}"></td>
                         <td th:text="${m.moveInDate}"></td>
                         <td th:text="${m.moveOutDate}"></td>
-
+                        <td>
+                            <span class="badge bg-primary" th:if="${m.isPrimary}">Đại diện</span>
+                            <span class="text-muted small" th:if="${!m.isPrimary}">-</span>
+                        </td>
                         <td class="text-end">
-                            <!-- Chỉ hiện nút Rời phòng khi người này chưa rời -->
-                            <form th:if="${m.moveOutDate == null}"
+                            <!-- chỉ cho rời phòng khi hợp đồng ACTIVE và người này chưa moveOut -->
+                            <form th:if="${contract.status.name()=='ACTIVE' && m.moveOutDate == null}"
                                   th:action="@{'/admin/contracts/' + ${contract.id} + '/remove-member/' + ${m.tenantId}}"
                                   method="post" class="d-inline"
                                   onsubmit="return confirm('Cho người này rời phòng?');">
@@ -147,15 +139,14 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(members)}">
-                        <td colspan="5" class="text-center text-muted">Chưa có thành viên</td>
+                        <td colspan="6" class="text-center text-muted">Chưa có thành viên</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="text-muted small mt-2">
-                Nếu bạn chưa sửa controller để truyền <code>roomText</code>, <code>repTenantText</code>, <code>memberTenantMap</code>
-                thì trang sẽ fallback về hiển thị ID.
+                * Khi hợp đồng ENDED: hệ thống đã set ngày ra cho toàn bộ thành viên. Muốn cho “ở lại” thì bấm “Tiếp tục hợp đồng”.
             </div>
         </div>
     </div>

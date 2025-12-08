@@ -9,7 +9,6 @@
 <body class="bg-light">
 
 <div class="container py-4">
-
     <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -30,16 +29,19 @@
 
             <form class="row g-3" method="post" action="/admin/contracts/create" th:object="${newContract}">
                 <div class="col-md-3">
-                    <label class="form-label">Mã hợp đồng *</label>
-                    <input class="form-control" th:field="*{contractCode}" required placeholder="HD001">
+                    <label class="form-label">Mã hợp đồng</label>
+                    <input class="form-control" th:field="*{contractCode}" placeholder="HD001 (có thể bỏ trống)">
+                    <div class="form-text">Bỏ trống sẽ tự sinh mã.</div>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Phòng *</label>
                     <select class="form-select" th:field="*{roomId}" required>
                         <option value="">-- Chọn phòng --</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}"
-                                th:text="${r.roomCode + ' - ' + r.roomName}"></option>
+                        <option th:each="r : ${rooms}"
+                                th:value="${r.id}"
+                                th:text="${r.roomCode + ' - ' + (r.roomName != null ? r.roomName : '')}">
+                        </option>
                     </select>
                 </div>
 
@@ -47,8 +49,10 @@
                     <label class="form-label">Khách đại diện *</label>
                     <select class="form-select" th:field="*{tenantId}" required>
                         <option value="">-- Chọn khách --</option>
-                        <option th:each="t : ${tenants}" th:value="${t.id}"
-                                th:text="${t.fullName + ' - ' + t.phone}"></option>
+                        <option th:each="t : ${tenants}"
+                                th:value="${t.id}"
+                                th:text="${t.fullName + ' - ' + t.phone}">
+                        </option>
                     </select>
                 </div>
 
@@ -58,13 +62,13 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Giá thuê (bỏ trống sẽ lấy theo phòng)</label>
-                    <input type="number" class="form-control" th:field="*{rentPrice}" min="0">
+                    <label class="form-label">Giá thuê (có thể bỏ trống)</label>
+                    <input type="number" class="form-control" th:field="*{rentPrice}" min="0" placeholder="0">
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Tiền cọc (bỏ trống sẽ lấy theo phòng)</label>
-                    <input type="number" class="form-control" th:field="*{deposit}" min="0">
+                    <label class="form-label">Tiền cọc (có thể bỏ trống)</label>
+                    <input type="number" class="form-control" th:field="*{deposit}" min="0" placeholder="0">
                 </div>
 
                 <div class="col-md-6">
@@ -93,6 +97,7 @@
                         <th>Phòng</th>
                         <th>Đại diện</th>
                         <th>Start</th>
+                        <th>End</th>
                         <th>Status</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
@@ -102,23 +107,14 @@
                         <td th:text="${c.id}"></td>
                         <td th:text="${c.contractCode}"></td>
 
-                        <!-- PHÒNG: ưu tiên show tên phòng nếu controller đã map roomMap -->
-                        <td>
-                            <span th:if="${roomMap != null and roomMap.containsKey(c.roomId)}"
-                                  th:text="${roomMap.get(c.roomId)}"></span>
-                            <span th:unless="${roomMap != null and roomMap.containsKey(c.roomId)}"
-                                  th:text="${c.roomId}"></span>
-                        </td>
+                        <!-- ✅ Hiển thị tên phòng -->
+                        <td th:text="${roomMap != null ? roomMap[c.roomId] : c.roomId}"></td>
 
-                        <!-- ĐẠI DIỆN: ưu tiên show tên khách nếu controller đã map tenantMap -->
-                        <td>
-                            <span th:if="${tenantMap != null and tenantMap.containsKey(c.tenantId)}"
-                                  th:text="${tenantMap.get(c.tenantId)}"></span>
-                            <span th:unless="${tenantMap != null and tenantMap.containsKey(c.tenantId)}"
-                                  th:text="${c.tenantId}"></span>
-                        </td>
+                        <!-- ✅ Hiển thị tên khách đại diện -->
+                        <td th:text="${tenantMap != null ? tenantMap[c.tenantId] : c.tenantId}"></td>
 
                         <td th:text="${c.startDate}"></td>
+                        <td th:text="${c.endDate}"></td>
 
                         <td>
                             <span class="badge bg-success" th:if="${c.status.name()=='ACTIVE'}">ACTIVE</span>
@@ -126,10 +122,10 @@
                             <span class="badge bg-danger" th:if="${c.status.name()=='CANCELLED'}">CANCELLED</span>
                         </td>
 
-                        <td class="text-end d-flex justify-content-end gap-2 flex-wrap">
+                        <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary" th:href="@{'/admin/contracts/' + ${c.id}}">Chi tiết</a>
 
-                            <!-- END (ACTIVE) -->
+                            <!-- END -->
                             <form th:if="${c.status.name()=='ACTIVE'}"
                                   th:action="@{'/admin/contracts/' + ${c.id} + '/end'}"
                                   method="post" class="d-inline"
@@ -137,7 +133,7 @@
                                 <button class="btn btn-sm btn-outline-danger">Kết thúc</button>
                             </form>
 
-                            <!-- RESUME (ENDED) -->
+                            <!-- RESUME -->
                             <form th:if="${c.status.name()=='ENDED'}"
                                   th:action="@{'/admin/contracts/' + ${c.id} + '/resume'}"
                                   method="post" class="d-inline"
@@ -148,15 +144,14 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(contracts)}">
-                        <td colspan="7" class="text-center text-muted">Chưa có hợp đồng</td>
+                        <td colspan="8" class="text-center text-muted">Chưa có hợp đồng</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="text-muted small mt-2">
-                Nếu bạn chưa sửa controller để truyền <code>roomMap</code> và <code>tenantMap</code>, hệ thống sẽ fallback về hiển thị ID.
-                Sau khi sửa xong, cột Phòng/Đại diện sẽ tự hiển thị tên.
+                * Phòng/Đại diện đang lấy từ <code>roomMap</code> và <code>tenantMap</code> trong controller.
             </div>
         </div>
     </div>
