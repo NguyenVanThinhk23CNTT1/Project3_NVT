@@ -3,52 +3,795 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Trang chủ - Phòng trọ</title>
+    <title>Phòngtốt - Danh sách phòng</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --brand: #22c7c7;         /* xanh ngọc kiểu phongtot */
+            --brand-2: #0ea5a5;
+            --brand-dark: #0b5564;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --card: #ffffff;
+            --radius: 18px;
+        }
+
+        body{ color: var(--ink); }
+
+        /* Header */
+        .pt-header{
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            background: #fff;
+            border-bottom: 1px solid rgba(15,23,42,.08);
+        }
+        .pt-container{
+            max-width: 1200px;
+        }
+        .brand{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            text-decoration:none;
+            color: var(--ink);
+        }
+        .brand .logo{
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow: 0 .5rem 1rem rgba(34,199,199,.25);
+            flex: 0 0 auto;
+        }
+        .brand .name{
+            font-weight: 900;
+            letter-spacing: .2px;
+            font-size: 1.05rem;
+            line-height: 1.05;
+        }
+        .brand .sub{
+            font-size: .82rem;
+            color: var(--muted);
+            margin-top: -2px;
+        }
+
+        .nav-pill{
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            border: 1px solid rgba(15,23,42,.12);
+            background: #fff;
+            color: var(--ink);
+            transition: all .15s ease;
+            text-decoration:none;
+            font-size: .9rem;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+        }
+        .nav-pill:hover{
+            transform: translateY(-1px);
+            border-color: rgba(34,199,199,.55);
+            box-shadow: 0 .75rem 1.5rem rgba(2,132,199,.08);
+        }
+        .nav-pill.primary{
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            border: none;
+            color: #fff;
+        }
+        .nav-pill.primary:hover{
+            filter: brightness(.98);
+            box-shadow: 0 .9rem 2rem rgba(34,199,199,.25);
+        }
+        .nav-pill.dark{
+            background: #0f172a;
+            border: none;
+            color:#fff;
+        }
+        .nav-pill.dark:hover{
+            background:#111c33;
+        }
+
+        /* Search bar */
+        .search-wrap{
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            padding: 16px 0;
+        }
+        .search-bar{
+            background:#fff;
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 1rem 2.5rem rgba(2,6,23,.12);
+        }
+        .s-field{
+            border: 1px solid rgba(15,23,42,.12);
+            border-radius: 14px;
+            padding: .75rem .85rem;
+            font-size: .95rem;
+            outline: none;
+            transition: all .15s ease;
+            height: 46px;
+        }
+        .s-field:focus{
+            border-color: rgba(34,199,199,.9);
+            box-shadow: 0 0 0 .25rem rgba(34,199,199,.18);
+        }
+        .s-btn{
+            height: 46px;
+            border-radius: 14px;
+            padding: 0 16px;
+            border: none;
+            font-weight: 700;
+            transition: all .15s ease;
+            white-space: nowrap;
+        }
+        .s-btn.search{
+            background: #0b5564;
+            color:#fff;
+        }
+        .s-btn.search:hover{
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+        .s-btn.reset{
+            background: transparent;
+            color:#fff;
+            text-decoration: underline;
+            opacity: .95;
+        }
+        .s-btn.reset:hover{
+            opacity: 1;
+        }
+
+        /* Cards */
+        .room-card{
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform .15s ease, box-shadow .15s ease;
+            background: var(--card);
+        }
+        .room-card:hover{
+            transform: translateY(-2px);
+            box-shadow: 0 .9rem 2rem rgba(2,6,23,.10);
+        }
+        .room-cover{
+            height: 175px;
+            position: relative;
+            background: #f1f5f9;
+        }
+        .room-cover img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display:block;
+        }
+        .cover-shade{
+            position:absolute; inset:0;
+            background: linear-gradient(to bottom, rgba(0,0,0,.08), rgba(0,0,0,.45));
+        }
+        .badge-top{
+            position:absolute;
+            top: 12px; left: 12px;
+        }
+        .room-title{
+            position:absolute;
+            bottom: 10px; left: 12px; right: 12px;
+            color:#fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,.35);
+        }
+        .room-title .code{
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+        .room-title .name{
+            font-size: .9rem;
+            opacity: .92;
+        }
+
+        .meta{
+            display:flex;
+            gap:10px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+        .meta b{ color: var(--ink); }
+
+        .price{
+            font-weight: 900;
+            font-size: 1.05rem;
+        }
+        .btn-soft{
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        /* Headline */
+        .headline{
+            font-size: 2rem;
+            font-weight: 950;
+            letter-spacing: -.6px;
+        }
+        .subline{
+            color: var(--muted);
+        }
+
+        /* Small breadcrumb */
+        .crumb{
+            color: var(--muted);
+            font-size: .9rem;
+        }
+        .crumb a{
+            color: var(--muted);
+            text-decoration:none;
+        }
+        .crumb a:hover{ text-decoration:underline; }
+
+        /* Chat widget */
+        .chat-fab{
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 1050;
+        }
+        .chat-btn{
+            width: 56px; height: 56px;
+            border-radius: 999px;
+            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
+            border:none;
+            background: #0f172a;
+            color:#fff;
+            font-size: 20px;
+        }
+        .chat-btn:hover{ background:#111c33; }
+        .chat-panel{
+            position: fixed;
+            right: 18px;
+            bottom: 86px;
+            width: min(360px, calc(100vw - 36px));
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 1rem 2rem rgba(0,0,0,.18);
+            display:none;
+            z-index: 1050;
+            background: #fff;
+        }
+        .chat-header{
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 12px;
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+        }
+        .chat-body{
+            padding: 12px;
+            height: 320px;
+            overflow:auto;
+            background: #f8f9fa;
+        }
+        .chat-msg{
+            max-width: 85%;
+            padding: 8px 10px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            font-size: .92rem;
+            line-height: 1.35;
+        }
+        .chat-bot{ background: #fff; border: 1px solid #e9ecef; }
+        .chat-user{ background: #0d6efd; color:#fff; margin-left:auto; }
+        .chat-foot{
+            padding: 10px;
+            border-top: 1px solid #e9ecef;
+            display:flex;
+            gap: 8px;
+            background: #fff;
+        }
+        .chat-foot input{ border-radius: 999px; }
+
+        /* ===== Sticky searchbar: auto hide on scroll (không che card) ===== */
+.pt-header{
+    will-change: transform;
+    transition: transform .22s ease;
+}
+.pt-header.is-hidden{
+    transform: translateY(-100%);
+}
+
+/* chừa khoảng trống đúng chiều cao header để nội dung không bị "nhảy" và không bị che */
+.header-spacer{
+    height: var(--header-h, 0px);
+}
+
+/* ===== Quick action (hotline + zalo) ===== */
+.nav-pill.hotline{
+    border-color: rgba(239, 68, 68, .35);
+}
+.nav-pill.hotline:hover{
+    border-color: rgba(239, 68, 68, .65);
+    box-shadow: 0 .75rem 1.5rem rgba(239, 68, 68, .12);
+}
+
+.nav-pill.zalo{
+    border-color: rgba(34, 197, 94, .35);
+}
+.nav-pill.zalo:hover{
+    border-color: rgba(34, 197, 94, .65);
+    box-shadow: 0 .75rem 1.5rem rgba(34, 197, 94, .12);
+}
+
+        /* ===== Floating actions: Zalo + Hotline + Robot ===== */
+.fab-stack{
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.fab-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    border: 1px solid rgba(15,23,42,.12);
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 .75rem 1.5rem rgba(2,6,23,.12);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    font-weight: 800;
+    font-size: .92rem;
+    line-height: 1;
+}
+
+.fab-pill:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 1rem 2rem rgba(2,6,23,.16);
+    border-color: rgba(34,199,199,.6);
+}
+
+.fab-ico{
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #fff;
+    flex: 0 0 auto;
+}
+
+.fab-pill.zalo .fab-ico{ background: #22c55e; }
+.fab-pill.hotline .fab-ico{ background: #ef4444; }
+
+.fab-pill .sub{
+    font-weight: 700;
+    color: var(--muted);
+    font-size: .82rem;
+    margin-top: 2px;
+}
+
+/* Nút robot tròn */
+.fab-robot{
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
+    border: none;
+    background: #0f172a;
+    color: #fff;
+    font-size: 22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform .15s ease, filter .15s ease;
+}
+.fab-robot:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+}
+
+/* Mobile: thu gọn chữ, chỉ để icon + số */
+@media (max-width: 576px){
+    .fab-pill{
+        padding: 10px 12px;
+    }
+    .fab-pill .text-wrap{
+        display:none;
+    }
+}
+
+    </style>
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom">
-    <div class="container">
-        <a class="navbar-brand fw-semibold" href="/">NVT - Nhà trọ</a>
-        <div class="ms-auto d-flex gap-2">
-            <a class="btn btn-outline-primary btn-sm" href="/bills">Tra hóa đơn</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/feedback">Phản ánh</a>
-            <a class="btn btn-dark btn-sm" href="/admin">Admin</a>
+<!-- HEADER -->
+<header class="pt-header">
+    <div class="container pt-container py-3 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <a class="brand" href="/">
+            <div class="logo">
+                <img th:src="@{/Svghome.png}" alt="Logo"
+                     style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+            </div>
+
+            <div>
+                <div class="name">Phòngtốt</div>
+                <div class="sub">Tìm phòng nhanh • Gửi yêu cầu gọn</div>
+            </div>
+        </a>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a class="nav-pill" href="/bills">🧾 Tra hóa đơn</a>
+            <a class="nav-pill" href="/feedback">🛠️ Phản ánh</a>
+            <a class="nav-pill primary" href="#search">🔎 Tìm phòng</a>
+            <a class="nav-pill dark" href="/admin">Admin</a>
         </div>
     </div>
-</nav>
 
-<div class="container py-4">
+    <!-- SEARCH BAR -->
+    <div class="search-wrap" id="search">
+        <div class="container pt-container">
+            <div class="search-bar">
+                <form class="row g-2 align-items-center" onsubmit="return false;">
+                    <div class="col-lg-4">
+                        <input class="form-control s-field" id="q"
+                               placeholder="Tìm theo tên phòng, mã phòng, mô tả..."
+                               autocomplete="off">
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <select class="form-select s-field" id="price">
+                            <option value="">Giá phòng</option>
+                            <option value="0-2000000">Dưới 2,000,000</option>
+                            <option value="2000000-3000000">2,000,000 - 3,000,000</option>
+                            <option value="3000000-5000000">3,000,000 - 5,000,000</option>
+                            <option value="5000000-999999999">Trên 5,000,000</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <select class="form-select s-field" id="area">
+                            <option value="">Diện tích</option>
+                            <option value="0-20">Dưới 20 m²</option>
+                            <option value="20-30">20 - 30 m²</option>
+                            <option value="30-50">30 - 50 m²</option>
+                            <option value="50-9999">Trên 50 m²</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4">
+                        <select class="form-select s-field" id="type">
+                            <option value="">Loại phòng</option>
+                            <option value="mini">Căn hộ mini</option>
+                            <option value="phongtro">Phòng trọ</option>
+                            <option value="nguyencan">Nguyên căn</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 d-grid">
+                        <button type="button" class="s-btn search" id="btnSearch">Tìm kiếm</button>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="button" class="s-btn reset" id="btnReset">Đặt lại</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="header-spacer"></div>
+<!-- CONTENT -->
+<div class="container pt-container py-4">
+
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
 
-    <h4 class="mb-1">Phòng trống</h4>
-    <div class="text-muted mb-3">Chọn phòng để xem chi tiết và gửi yêu cầu đặt thuê.</div>
+    <div class="crumb mb-2">
+        <a href="/">Trang chủ</a> <span class="mx-1">›</span> <span>Phòng trống</span>
+    </div>
 
-    <div class="row g-3">
-        <div class="col-md-4" th:each="r : ${rooms}">
-            <div class="card border-0 shadow-sm h-100">
+    <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="headline">Cho thuê phòng trọ</div>
+            <div class="subline">Danh sách phòng trống đang sẵn sàng cho thuê.</div>
+        </div>
+        <div class="text-muted small">
+            Tổng: <b id="countTotal" th:text="${#lists.size(rooms)}"></b> phòng
+            • Đang hiển thị: <b id="countShown">0</b>
+        </div>
+    </div>
+
+    <div class="row g-3" id="roomGrid">
+        <div class="col-md-4 room-item" th:each="r : ${rooms}"
+             th:attr="data-code=${r.roomCode},
+                      data-name=${r.roomName},
+                      data-desc=${r.description},
+                      data-price=${r.rentPrice},
+                      data-area=${r.area}">
+            <div class="card border-0 shadow-sm room-card h-100">
+                <div class="room-cover">
+                    <img th:if="${r.imageUrl != null}" th:src="${r.imageUrl}" alt="Ảnh phòng">
+                    <img th:if="${r.imageUrl == null}"
+                         src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=60"
+                         alt="Ảnh phòng">
+                    <div class="cover-shade"></div>
+                    <span class="badge bg-success badge-top">EMPTY</span>
+                    <div class="room-title">
+                        <div class="code" th:text="${r.roomCode != null ? r.roomCode : ('#' + r.id)}"></div>
+                        <div class="name" th:text="${r.roomName != null ? r.roomName : 'Phòng trọ'}"></div>
+                    </div>
+                </div>
+
                 <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div class="fw-semibold" th:text="${r.roomCode + ' - ' + r.roomName}"></div>
-                        <span class="badge bg-success">EMPTY</span>
+                    <div class="meta mb-2">
+                        <div>🏢 <b th:text="${'Tầng ' + (r.floor != null ? r.floor : 1)}"></b></div>
+                        <div>👥 <b th:text="${(r.maxPeople != null ? r.maxPeople : 1) + ' người'}"></b></div>
+                        <div th:if="${r.area != null}">📐 <b th:text="${r.area + ' m²'}"></b></div>
                     </div>
-                    <div class="text-muted small mt-1" th:text="'Tầng: ' + ${r.floor} + ' | Tối đa: ' + ${r.maxPeople} + ' người'"></div>
-                    <div class="mt-2">
-                        <div><b>Giá:</b> <span th:text="${r.rentPrice}"></span></div>
-                        <div><b>Diện tích:</b> <span th:text="${r.area}"></span></div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Giá</div>
+                            <div class="price">
+                                <span th:text="${#numbers.formatDecimal(r.rentPrice, 0, 'COMMA', 0, 'POINT')}"></span>
+                                <span class="text-muted" style="font-size:.9rem">đ</span>
+                            </div>
+                        </div>
+                        <a class="btn btn-primary btn-soft btn-sm" th:href="@{'/rooms/' + ${r.id}}">Xem phòng</a>
                     </div>
-                    <a class="btn btn-primary btn-sm mt-3" th:href="@{'/rooms/' + ${r.id}}">Xem phòng</a>
+
+                    <div class="small text-muted mt-2" th:if="${r.description != null}">
+                        <span th:text="${#strings.abbreviate(r.description, 90)}"></span>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <div class="col-12" id="emptyState" style="display:none;">
+            <div class="alert alert-info mb-0">
+                Không tìm thấy phòng phù hợp. Bạn thử đổi bộ lọc nhé.
+            </div>
+        </div>
+
         <div class="col-12" th:if="${#lists.isEmpty(rooms)}">
-            <div class="alert alert-info">Hiện chưa có phòng trống.</div>
+            <div class="alert alert-info mb-0">Hiện chưa có phòng trống.</div>
         </div>
     </div>
 </div>
+
+<!-- Chat widget -->
+<div class="chat-panel" id="chatPanel" aria-hidden="true">
+    <div class="chat-header">
+        <div class="fw-semibold">🤖 Trợ lý Phòngtốt</div>
+        <button class="btn btn-sm btn-outline-light" type="button" id="chatClose">Đóng</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-msg chat-bot">
+            Chào bạn 👋 Mình giúp lọc phòng theo <b>giá</b>, <b>diện tích</b>, <b>số người</b> hoặc tư vấn thủ tục thuê.
+        </div>
+        <div class="chat-msg chat-bot">
+            Gợi ý: gõ “giá dưới 3 triệu” hoặc “phòng 2 người”.
+        </div>
+    </div>
+    <div class="chat-foot">
+        <input class="form-control form-control-sm" id="chatInput" placeholder="Nhập tin nhắn..." />
+        <button class="btn btn-primary btn-sm" id="chatSend">Gửi</button>
+    </div>
+</div>
+
+<!-- Floating actions: Zalo + Hotline + Robot -->
+<div class="fab-stack">
+    <!-- Zalo -->
+    <a class="fab-pill zalo" target="_blank" href="https://zalo.me/0343841111" title="Chat Zalo">
+        <span class="fab-ico">💚</span>
+        <span class="text-wrap">
+            Zalo hỗ trợ
+            <div class="sub">Nhấn để chat</div>
+        </span>
+    </a>
+
+    <!-- Hotline -->
+    <a class="fab-pill hotline" href="tel:0343841111" title="Gọi hotline">
+        <span class="fab-ico">☎</span>
+        <span class="text-wrap">
+            Hotline
+            <div class="sub">0343841111</div>
+        </span>
+        <span class="d-sm-none fw-bold">0343841111</span>
+    </a>
+
+    <!-- Robot -->
+    <button class="fab-robot" type="button" id="chatToggle" title="Robot hỗ trợ">🤖</button>
+</div>
+
+
+<script>
+    // ====== Front-end filter (không cần backend) ======
+    function toNum(v){
+        if (v == null) return NaN;
+        const s = String(v).replaceAll(',', '').trim();
+        const n = Number(s);
+        return Number.isFinite(n) ? n : NaN;
+    }
+
+    function inRange(val, range){
+        if (!range) return true;
+        const [a,b] = range.split('-').map(Number);
+        if (!Number.isFinite(a) || !Number.isFinite(b)) return true;
+        return val >= a && val <= b;
+    }
+
+    function normalizeText(s){
+        return (s || '').toString().toLowerCase().trim();
+    }
+
+    function applyFilter(){
+        const q = normalizeText(document.getElementById('q').value);
+        const priceRange = document.getElementById('price').value;
+        const areaRange = document.getElementById('area').value;
+        // type để sẵn UI; hiện bạn chưa có field loại phòng => chỉ dùng keyword (optional)
+        const type = document.getElementById('type').value;
+
+        const items = Array.from(document.querySelectorAll('.room-item'));
+        let shown = 0;
+
+        items.forEach(el => {
+            const code = normalizeText(el.dataset.code);
+            const name = normalizeText(el.dataset.name);
+            const desc = normalizeText(el.dataset.desc);
+            const price = toNum(el.dataset.price);
+            const area = toNum(el.dataset.area);
+
+            const matchQ = !q || (code.includes(q) || name.includes(q) || desc.includes(q));
+            const matchPrice = Number.isFinite(price) ? inRange(price, priceRange) : (priceRange ? false : true);
+            const matchArea = Number.isFinite(area) ? inRange(area, areaRange) : (areaRange ? false : true);
+
+            // type: nếu người dùng chọn type thì sẽ yêu cầu keyword có chứa (mini/phongtro/nguyencan)
+            const matchType = !type || (desc.includes(type) || name.includes(type) || code.includes(type));
+
+            const ok = matchQ && matchPrice && matchArea && matchType;
+
+            el.style.display = ok ? '' : 'none';
+            if (ok) shown++;
+        });
+
+        document.getElementById('countShown').innerText = String(shown);
+        document.getElementById('emptyState').style.display = shown === 0 ? '' : 'none';
+    }
+
+    document.getElementById('btnSearch').addEventListener('click', applyFilter);
+    document.getElementById('q').addEventListener('input', () => {
+        // lọc realtime nhẹ
+        applyFilter();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+        document.getElementById('q').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('area').value = '';
+        document.getElementById('type').value = '';
+        applyFilter();
+        document.getElementById('q').focus();
+    });
+
+    // initial
+    applyFilter();
+
+    // ====== Chat widget ======
+    (function(){
+        const panel = document.getElementById('chatPanel');
+        const toggle = document.getElementById('chatToggle');
+        const closeBtn = document.getElementById('chatClose');
+        const body = document.getElementById('chatBody');
+        const input = document.getElementById('chatInput');
+        const send = document.getElementById('chatSend');
+
+        const open = () => { panel.style.display='block'; panel.setAttribute('aria-hidden','false'); input.focus(); };
+        const close = () => { panel.style.display='none'; panel.setAttribute('aria-hidden','true'); };
+
+        toggle.addEventListener('click', () => {
+            const isOpen = panel.style.display === 'block';
+            isOpen ? close() : open();
+        });
+        closeBtn.addEventListener('click', close);
+
+        const addMsg = (text, who) => {
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + (who === 'user' ? 'chat-user' : 'chat-bot');
+            div.innerHTML = text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        };
+
+        const botReply = (q) => {
+            const s = (q || '').toLowerCase();
+
+            if (s.includes('dưới 3') || s.includes('3 triệu')) {
+                document.getElementById('price').value = '2000000-3000000';
+                applyFilter();
+                return 'Mình đã lọc <b>2–3 triệu</b> cho bạn ở thanh “Giá phòng” rồi nhé ✅';
+            }
+            if (s.includes('dưới 2') || s.includes('2 triệu')) {
+                document.getElementById('price').value = '0-2000000';
+                applyFilter();
+                return 'Ok, mình lọc <b>dưới 2 triệu</b> ✅';
+            }
+            if (s.includes('diện tích') && (s.includes('20') || s.includes('dưới 20'))) {
+                document.getElementById('area').value = '0-20';
+                applyFilter();
+                return 'Mình đã lọc <b>dưới 20m²</b> ✅';
+            }
+            if (s.includes('thủ tục') || s.includes('giấy tờ')) {
+                return 'Thường cần CCCD + đặt cọc. Bạn bấm “Xem phòng” → “Gửi yêu cầu” để admin liên hệ hẹn lịch xem phòng/ký hợp đồng.';
+            }
+            return 'Bạn muốn mình lọc theo <b>giá</b> hay <b>diện tích</b>? Ví dụ: “giá dưới 3 triệu”, “diện tích 20-30”.';
+        };
+
+        const onSend = () => {
+            const text = input.value.trim();
+            if (!text) return;
+            addMsg(text, 'user');
+            input.value = '';
+            setTimeout(() => addMsg(botReply(text), 'bot'), 250);
+        };
+
+        send.addEventListener('click', onSend);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') onSend();
+        });
+    })();
+
+    // ===== Auto-hide HEADER when scroll down, show when scroll up =====
+(function(){
+    const header = document.querySelector('.pt-header');
+    const spacer = document.querySelector('.header-spacer');
+
+    if (!header || !spacer) return;
+
+    const setSpacerHeight = () => {
+        const h = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-h', h + 'px');
+        spacer.style.height = 'var(--header-h)';
+    };
+
+    setSpacerHeight();
+    window.addEventListener('resize', setSpacerHeight);
+
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const onScroll = () => {
+        const y = window.scrollY;
+
+        // cuộn xuống và vượt qua 120px thì ẩn
+        if (y > lastY && y > 120) header.classList.add('is-hidden');
+        // cuộn lên thì hiện
+        if (y < lastY) header.classList.remove('is-hidden');
+
+        lastY = y;
+        ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(onScroll);
+            ticking = true;
+        }
+    }, { passive: true });
+})();
+
+</script>
 
 </body>
 </html>

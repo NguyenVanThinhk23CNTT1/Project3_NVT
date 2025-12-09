@@ -3,71 +3,382 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Chi tiết phòng</title>
+    <title>Phòngtốt - Chi tiết phòng</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --brand:#22c7c7;
+            --brand-2:#0ea5a5;
+            --brand-dark:#0b5564;
+            --ink:#0f172a;
+            --muted:#64748b;
+            --radius:18px;
+        }
+        body{ color:var(--ink); }
+
+        /* Header (đồng bộ home) */
+        .pt-header{
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            background: #fff;
+            border-bottom: 1px solid rgba(15,23,42,.08);
+        }
+        .pt-container{ max-width: 1200px; }
+        .brand{
+            display:flex; gap:10px; align-items:center;
+            text-decoration:none; color:var(--ink);
+        }
+        .brand .logo{
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            display:flex; align-items:center; justify-content:center;
+            box-shadow: 0 .5rem 1rem rgba(34,199,199,.25);
+            flex: 0 0 auto;
+            overflow:hidden;
+        }
+        .brand .name{
+            font-weight: 900;
+            letter-spacing: .2px;
+            font-size: 1.05rem;
+            line-height: 1.05;
+        }
+        .brand .sub{
+            font-size: .82rem;
+            color: var(--muted);
+            margin-top: -2px;
+        }
+        .nav-pill{
+            border-radius: 999px;
+            padding: .45rem .85rem;
+            border: 1px solid rgba(15,23,42,.12);
+            background:#fff;
+            color: var(--ink);
+            transition: all .15s ease;
+            text-decoration:none;
+            font-size: .9rem;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+        }
+        .nav-pill:hover{
+            transform: translateY(-1px);
+            border-color: rgba(34,199,199,.55);
+            box-shadow: 0 .75rem 1.5rem rgba(2,132,199,.08);
+        }
+        .nav-pill.primary{
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            border: none;
+            color:#fff;
+        }
+        .nav-pill.primary:hover{
+            filter: brightness(.98);
+            box-shadow: 0 .9rem 2rem rgba(34,199,199,.25);
+        }
+
+        /* Hero */
+        .hero{
+            border-radius: var(--radius);
+            overflow:hidden;
+            position: relative;
+            height: 280px;
+            background: #f1f3f5;
+        }
+        .hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+        .hero .shade{
+            position:absolute; inset:0;
+            background: linear-gradient(to bottom, rgba(0,0,0,.08), rgba(0,0,0,.6));
+        }
+        .hero .info{
+            position:absolute; left: 16px; right:16px; bottom: 14px;
+            color:#fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,.35);
+        }
+        .hero .code{ font-size: 1.55rem; font-weight: 950; }
+        .hero .name{ opacity:.95; }
+
+        .cardX{ border-radius: var(--radius); }
+        .kv{ display:flex; gap: 10px; flex-wrap: wrap; color:#6c757d; }
+        .kv .item{
+            background:#f8f9fa;
+            border: 1px solid #eef0f2;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-size: .9rem;
+        }
+        .price{ font-size: 1.55rem; font-weight: 950; }
+        .btn-soft{ border-radius: 14px; font-weight: 800; }
+
+        /* Chat widget */
+        .chat-fab{ position: fixed; right: 18px; bottom: 18px; z-index: 1050; display:flex; flex-direction:column; gap:10px; }
+        .chat-btn{
+            width: 56px; height: 56px;
+            border-radius: 999px;
+            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
+            border:none;
+            background: #0f172a;
+            color:#fff;
+            font-size: 20px;
+        }
+        .chat-btn:hover{ background:#111c33; }
+        .chat-panel{
+            position: fixed;
+            right: 18px;
+            bottom: 86px;
+            width: min(360px, calc(100vw - 36px));
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 1rem 2rem rgba(0,0,0,.18);
+            display:none;
+            z-index: 1050;
+            background: #fff;
+        }
+        .chat-header{
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 12px;
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+        }
+        .chat-body{
+            padding: 12px;
+            height: 320px;
+            overflow:auto;
+            background: #f8f9fa;
+        }
+        .chat-msg{
+            max-width: 85%;
+            padding: 8px 10px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            font-size: .92rem;
+            line-height: 1.35;
+        }
+        .chat-bot{ background: #fff; border: 1px solid #e9ecef; }
+        .chat-user{ background: #0d6efd; color:#fff; margin-left:auto; }
+        .chat-foot{
+            padding: 10px;
+            border-top: 1px solid #e9ecef;
+            display:flex;
+            gap: 8px;
+            background: #fff;
+        }
+        .chat-foot input{ border-radius: 999px; }
+    </style>
 </head>
 <body class="bg-light">
 
-<nav class="navbar bg-white border-bottom">
-    <div class="container">
-        <a class="navbar-brand fw-semibold" href="/">← Quay lại</a>
-        <div class="ms-auto d-flex gap-2">
-            <a class="btn btn-outline-primary btn-sm" href="/bills">Tra hóa đơn</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/feedback">Phản ánh</a>
+<header class="pt-header">
+    <div class="container pt-container py-3 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <a class="brand" href="/">
+            <div class="logo">
+                <img th:src="@{/Svghome.png}" alt="Logo"
+                     style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div>
+                <div class="name">Phòngtốt</div>
+                <div class="sub">Xem phòng • Gửi yêu cầu nhanh</div>
+            </div>
+        </a>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a class="nav-pill" href="/">🏠 Trang chủ</a>
+            <a class="nav-pill" href="/bills">🧾 Tra hóa đơn</a>
+            <a class="nav-pill" href="/feedback">🛠️ Phản ánh</a>
+            <button class="nav-pill primary" type="button" id="chatOpenTop">🤖 Hỗ trợ</button>
         </div>
     </div>
-</nav>
+</header>
 
-<div class="container py-4" style="max-width: 900px">
-
+<div class="container py-4" style="max-width: 980px">
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
 
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-            <h4 class="mb-0" th:text="${room.roomCode + ' - ' + room.roomName}"></h4>
-            <div class="text-muted" th:text="'Trạng thái: ' + ${room.status}"></div>
+    <!-- Hero ảnh -->
+    <div class="hero shadow-sm mb-3">
+        <img th:if="${room.imageUrl != null}" th:src="${room.imageUrl}" alt="Ảnh phòng">
+        <img th:if="${room.imageUrl == null}"
+             src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=60"
+             alt="Ảnh phòng">
 
-            <hr>
-            <div class="row g-2">
-                <div class="col-md-4"><b>Giá thuê:</b> <span th:text="${room.rentPrice}"></span></div>
-                <div class="col-md-4"><b>Tiền cọc:</b> <span th:text="${room.depositDefault}"></span></div>
-                <div class="col-md-4"><b>Diện tích:</b> <span th:text="${room.area}"></span></div>
-                <div class="col-md-4"><b>Tầng:</b> <span th:text="${room.floor}"></span></div>
-                <div class="col-md-4"><b>Tối đa:</b> <span th:text="${room.maxPeople}"></span> người</div>
-            </div>
-
-            <div class="mt-2">
-                <b>Mô tả:</b>
-                <div class="text-muted" th:text="${room.description}"></div>
+        <div class="shade"></div>
+        <div class="info">
+            <div class="code" th:text="${room.roomCode != null ? room.roomCode : ('#' + room.id)}"></div>
+            <div class="name" th:text="${room.roomName != null ? room.roomName : 'Phòng trọ'}"></div>
+            <div class="small mt-1">
+                Trạng thái:
+                <span class="badge bg-success" th:if="${room.status != null && room.status.name()=='EMPTY'}">EMPTY</span>
+                <span class="badge bg-secondary" th:if="${room.status != null && room.status.name()!='EMPTY'}" th:text="${room.status}"></span>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <h6 class="mb-3">Gửi yêu cầu đặt thuê</h6>
+    <div class="row g-3">
+        <!-- Thông tin phòng -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm cardX">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <div class="text-muted small">Giá thuê / tháng</div>
+                            <div class="price">
+                                <span th:text="${#numbers.formatDecimal(room.rentPrice, 0, 'COMMA', 0, 'POINT')}"></span>
+                                <span class="text-muted" style="font-size:1rem">đ</span>
+                            </div>
+                            <div class="text-muted small" th:if="${room.depositDefault != null}">
+                                Tiền cọc dự kiến:
+                                <b th:text="${#numbers.formatDecimal(room.depositDefault, 0, 'COMMA', 0, 'POINT')} + 'đ'"></b>
+                            </div>
+                        </div>
+                        <div class="kv">
+                            <div class="item">🏢 Tầng <b th:text="${room.floor != null ? room.floor : 1}"></b></div>
+                            <div class="item">👥 <b th:text="${room.maxPeople != null ? room.maxPeople : 1}"></b> người</div>
+                            <div class="item" th:if="${room.area != null}">📐 <b th:text="${room.area}"></b> m²</div>
+                        </div>
+                    </div>
 
-            <form method="post" th:action="@{'/rooms/' + ${room.id} + '/book'}" class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Họ tên *</label>
-                    <input class="form-control" name="fullName" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Số điện thoại *</label>
-                    <input class="form-control" name="phone" required>
-                </div>
-                <div class="col-12">
-                    <button class="btn btn-primary">Gửi yêu cầu</button>
-                </div>
-            </form>
+                    <hr class="my-3">
 
-            <div class="text-muted small mt-2">
-                Hiện tại chưa có login nên hệ thống chỉ ghi nhận “yêu cầu”. Sau khi làm Login, mình sẽ lưu vào bảng booking_requests.
+                    <div class="row g-2 small">
+                        <div class="col-md-6"><b>Mã phòng:</b> <span th:text="${room.roomCode}"></span></div>
+                        <div class="col-md-6"><b>Tên phòng:</b> <span th:text="${room.roomName}"></span></div>
+                        <div class="col-md-6"><b>Hostel ID:</b> <span th:text="${room.hostelId}"></span></div>
+                        <div class="col-md-6"><b>Ảnh:</b>
+                            <span th:if="${room.imageUrl != null}" class="text-success">Có</span>
+                            <span th:if="${room.imageUrl == null}" class="text-muted">Chưa có</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="fw-semibold mb-1">Mô tả</div>
+                        <div class="text-muted" th:text="${room.description != null ? room.description : 'Chưa có mô tả'}"></div>
+                    </div>
+
+                    <div class="alert alert-warning mt-3 mb-0 small">
+                        Tip: Nếu bạn thích phòng này, cứ gửi yêu cầu thuê. Admin sẽ duyệt và liên hệ xác nhận lịch xem phòng / ký hợp đồng.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form gửi yêu cầu thuê -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm cardX">
+                <div class="card-body">
+                    <h6 class="mb-2">Gửi yêu cầu thuê phòng</h6>
+                    <div class="text-muted small mb-3">Điền thông tin, admin sẽ liên hệ sớm.</div>
+
+                    <form method="post" th:action="@{'/rooms/' + ${room.id} + '/book'}" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Họ tên *</label>
+                            <input class="form-control" name="fullName" required placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Số điện thoại *</label>
+                            <input class="form-control" name="phone" required placeholder="09xxxxxxxx">
+                        </div>
+
+                        <div class="col-12 d-grid">
+                            <button class="btn btn-primary btn-soft">Gửi yêu cầu</button>
+                        </div>
+                    </form>
+
+                    <hr class="my-3">
+
+                    <div class="small text-muted">
+                        (Bước sau) Mình sẽ làm bảng <b>booking_requests</b> + trang Admin duyệt để lưu yêu cầu này.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm cardX mt-3">
+                <div class="card-body">
+                    <h6 class="mb-2">Cần hỗ trợ nhanh?</h6>
+                    <div class="text-muted small mb-2">Bấm nút “🤖 Hỗ trợ” hoặc nút chat góc phải.</div>
+                    <div class="small">
+                        Gợi ý: <span class="badge text-bg-light">tiền cọc</span>
+                        <span class="badge text-bg-light">thủ tục thuê</span>
+                        <span class="badge text-bg-light">khi nào vào ở</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
+
+<!-- Chat widget -->
+<div class="chat-panel" id="chatPanel" aria-hidden="true">
+    <div class="chat-header">
+        <div class="fw-semibold">🤖 Trợ lý Phòngtốt</div>
+        <button class="btn btn-sm btn-outline-light" type="button" id="chatClose">Đóng</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-msg chat-bot">
+            Chào bạn 👋 Bạn đang xem phòng
+            <b th:text="${room.roomCode != null ? room.roomCode : ('#' + room.id)}"></b>.
+            Bạn muốn hỏi về <b>giá</b>, <b>cọc</b> hay <b>thủ tục thuê</b>?
+        </div>
+    </div>
+    <div class="chat-foot">
+        <input class="form-control form-control-sm" id="chatInput" placeholder="Nhập tin nhắn..." />
+        <button class="btn btn-primary btn-sm" id="chatSend">Gửi</button>
+    </div>
+</div>
+
+<div class="chat-fab">
+    <button class="chat-btn" type="button" id="chatToggle" title="Hỗ trợ">💬</button>
+</div>
+
+<script>
+    (function(){
+        const panel = document.getElementById('chatPanel');
+        const toggle = document.getElementById('chatToggle');
+        const openTop = document.getElementById('chatOpenTop');
+        const closeBtn = document.getElementById('chatClose');
+        const body = document.getElementById('chatBody');
+        const input = document.getElementById('chatInput');
+        const send = document.getElementById('chatSend');
+
+        const open = () => { panel.style.display='block'; panel.setAttribute('aria-hidden','false'); input.focus(); };
+        const close = () => { panel.style.display='none'; panel.setAttribute('aria-hidden','true'); };
+
+        toggle.addEventListener('click', () => panel.style.display === 'block' ? close() : open());
+        if (openTop) openTop.addEventListener('click', open);
+        closeBtn.addEventListener('click', close);
+
+        const addMsg = (text, who) => {
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + (who === 'user' ? 'chat-user' : 'chat-bot');
+            div.innerHTML = text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        };
+
+        const botReply = (q) => {
+            const s = (q || '').toLowerCase();
+            if (s.includes('cọc') || s.includes('tiền cọc')) return 'Tiền cọc thường theo phòng. Bạn xem mục <b>Tiền cọc dự kiến</b> nhé.';
+            if (s.includes('giá') || s.includes('bao nhiêu')) return 'Giá thuê/tháng hiển thị ở đầu trang. Gửi yêu cầu để admin xác nhận lại lần nữa.';
+            if (s.includes('thủ tục') || s.includes('giấy tờ')) return 'Thường cần CCCD + đặt cọc. Admin sẽ hẹn lịch xem phòng/ký hợp đồng sau khi bạn gửi yêu cầu.';
+            if (s.includes('khi nào') || s.includes('vào ở') || s.includes('dọn')) return 'Bạn có thể đề xuất thời gian dọn vào khi admin liên hệ. Trước mắt bạn cứ gửi yêu cầu thuê nhé.';
+            return 'Bạn muốn hỏi về <b>giá</b>, <b>cọc</b>, hay <b>thủ tục thuê</b>?';
+        };
+
+        const onSend = () => {
+            const text = input.value.trim();
+            if (!text) return;
+            addMsg(text, 'user');
+            input.value = '';
+            setTimeout(() => addMsg(botReply(text), 'bot'), 250);
+        };
+
+        send.addEventListener('click', onSend);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') onSend(); });
+    })();
+</script>
+
 </body>
 </html>

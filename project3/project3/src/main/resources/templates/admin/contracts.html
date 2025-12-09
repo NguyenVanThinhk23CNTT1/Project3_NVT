@@ -9,6 +9,7 @@
 <body class="bg-light">
 
 <div class="container py-4">
+
     <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -30,8 +31,8 @@
             <form class="row g-3" method="post" action="/admin/contracts/create" th:object="${newContract}">
                 <div class="col-md-3">
                     <label class="form-label">Mã hợp đồng</label>
-                    <input class="form-control" th:field="*{contractCode}" placeholder="HD001 (có thể bỏ trống)">
-                    <div class="form-text">Bỏ trống sẽ tự sinh mã.</div>
+                    <input class="form-control" th:field="*{contractCode}" placeholder="Để trống sẽ tự tạo">
+                    <div class="form-text">Nếu bị trùng, hệ thống tự sinh mã khác.</div>
                 </div>
 
                 <div class="col-md-3">
@@ -40,9 +41,10 @@
                         <option value="">-- Chọn phòng --</option>
                         <option th:each="r : ${rooms}"
                                 th:value="${r.id}"
-                                th:text="${r.roomCode + ' - ' + (r.roomName != null ? r.roomName : '')}">
+                                th:text="${r.roomCode + ' - ' + (r.roomName==null?'':r.roomName)}">
                         </option>
                     </select>
+                    <div class="form-text">Nên chọn phòng đang trống (EMPTY).</div>
                 </div>
 
                 <div class="col-md-3">
@@ -62,13 +64,13 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Giá thuê (có thể bỏ trống)</label>
-                    <input type="number" class="form-control" th:field="*{rentPrice}" min="0" placeholder="0">
+                    <label class="form-label">Giá thuê</label>
+                    <input type="number" class="form-control" th:field="*{rentPrice}" min="0" placeholder="Bỏ trống lấy theo phòng">
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Tiền cọc (có thể bỏ trống)</label>
-                    <input type="number" class="form-control" th:field="*{deposit}" min="0" placeholder="0">
+                    <label class="form-label">Tiền cọc</label>
+                    <input type="number" class="form-control" th:field="*{deposit}" min="0" placeholder="Bỏ trống lấy theo phòng">
                 </div>
 
                 <div class="col-md-6">
@@ -107,11 +109,11 @@
                         <td th:text="${c.id}"></td>
                         <td th:text="${c.contractCode}"></td>
 
-                        <!-- ✅ Hiển thị tên phòng -->
-                        <td th:text="${roomMap != null ? roomMap[c.roomId] : c.roomId}"></td>
+                        <!-- show tên phòng -->
+                        <td th:text="${roomMap != null && roomMap[c.roomId] != null ? roomMap[c.roomId] : ('Room#' + c.roomId)}"></td>
 
-                        <!-- ✅ Hiển thị tên khách đại diện -->
-                        <td th:text="${tenantMap != null ? tenantMap[c.tenantId] : c.tenantId}"></td>
+                        <!-- show tên khách -->
+                        <td th:text="${tenantMap != null && tenantMap[c.tenantId] != null ? tenantMap[c.tenantId] : ('Tenant#' + c.tenantId)}"></td>
 
                         <td th:text="${c.startDate}"></td>
                         <td th:text="${c.endDate}"></td>
@@ -125,7 +127,6 @@
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary" th:href="@{'/admin/contracts/' + ${c.id}}">Chi tiết</a>
 
-                            <!-- END -->
                             <form th:if="${c.status.name()=='ACTIVE'}"
                                   th:action="@{'/admin/contracts/' + ${c.id} + '/end'}"
                                   method="post" class="d-inline"
@@ -133,7 +134,6 @@
                                 <button class="btn btn-sm btn-outline-danger">Kết thúc</button>
                             </form>
 
-                            <!-- RESUME -->
                             <form th:if="${c.status.name()=='ENDED'}"
                                   th:action="@{'/admin/contracts/' + ${c.id} + '/resume'}"
                                   method="post" class="d-inline"
@@ -150,9 +150,6 @@
                 </table>
             </div>
 
-            <div class="text-muted small mt-2">
-                * Phòng/Đại diện đang lấy từ <code>roomMap</code> và <code>tenantMap</code> trong controller.
-            </div>
         </div>
     </div>
 

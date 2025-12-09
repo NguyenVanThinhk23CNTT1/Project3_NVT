@@ -2,8 +2,10 @@ package comk23cnt1.nvt.project3.nvt_service.impl;
 
 import comk23cnt1.nvt.project3.nvt_entity.NvtContract;
 import comk23cnt1.nvt.project3.nvt_entity.NvtContractMember;
+import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
 import comk23cnt1.nvt.project3.nvt_repository.NvtContractMemberRepository;
 import comk23cnt1.nvt.project3.nvt_repository.NvtContractRepository;
+import comk23cnt1.nvt.project3.nvt_repository.NvtRoomRepository;
 import comk23cnt1.nvt.project3.nvt_service.NvtContractService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,15 @@ public class NvtContractServiceImpl implements NvtContractService {
     private final NvtContractRepository contractRepo;
     private final NvtContractMemberRepository memberRepo;
 
+    // ✅ NEW: để lấy rent/deposit theo phòng + update room.status
+    private final NvtRoomRepository roomRepo;
+
     public NvtContractServiceImpl(NvtContractRepository contractRepo,
-                                  NvtContractMemberRepository memberRepo) {
+                                  NvtContractMemberRepository memberRepo,
+                                  NvtRoomRepository roomRepo) {
         this.contractRepo = contractRepo;
         this.memberRepo = memberRepo;
+        this.roomRepo = roomRepo;
     }
 
     @Override
@@ -39,6 +46,11 @@ public class NvtContractServiceImpl implements NvtContractService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hợp đồng"));
     }
 
+    private NvtRoom requireRoom(Long roomId) {
+        return roomRepo.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng ID=" + roomId));
+    }
+
     @Override
     public NvtContract create(NvtContract c) {
         if (c == null) throw new IllegalArgumentException("Dữ liệu hợp đồng không hợp lệ");
@@ -46,8 +58,17 @@ public class NvtContractServiceImpl implements NvtContractService {
         if (c.getTenantId() == null) throw new IllegalArgumentException("Chưa chọn người đại diện");
         if (c.getStartDate() == null) throw new IllegalArgumentException("Chưa nhập ngày bắt đầu");
 
-        // UI của bạn ghi: rentPrice/deposit có thể bỏ trống (lấy theo phòng)
-        // Hiện chưa inject RoomService nên tạm để default 0 để không crash.
+        // ✅ Chặn tạo ACTIVE mới nếu phòng đã có ACTIVE
+        if (contractRepo.existsByRoomIdAndStatus(c.getRoomId(), NvtContract.ContractStatus.ACTIVE)) {
+            throw new IllegalArgumentException("Phòng này đang có hợp đồng ACTIVE. Hãy kết thúc hợp đồng cũ trước.");
+        }
+
+        NvtRoom room = requireRoom(c.getRoomId());
+
+        // ✅ Bỏ trống => lấy theo phòng
+        if (c.getRentPrice() == null) c.setRentPrice(room.getRentPrice());
+        if (c.getDeposit() == null) c.setDeposit(room.getDepositDefault() != null ? room.getDepositDefault() : BigDecimal.ZERO);
+
         if (c.getRentPrice() == null) c.setRentPrice(BigDecimal.ZERO);
         if (c.getDeposit() == null) c.setDeposit(BigDecimal.ZERO);
 
@@ -66,6 +87,10 @@ public class NvtContractServiceImpl implements NvtContractService {
         if (c.getEndDate() != null && c.getEndDate().isBefore(c.getStartDate())) {
             throw new IllegalArgumentException("Ngày kết thúc không được trước ngày bắt đầu");
         }
+
+        // ✅ Đồng bộ phòng: có hợp đồng ACTIVE => room RENTING
+        room.setStatus(NvtRoom.RoomStatus.RENTING);
+        roomRepo.save(room);
 
         NvtContract saved = contractRepo.save(c);
 
@@ -112,18 +137,14 @@ public class NvtContractServiceImpl implements NvtContractService {
             throw new IllegalArgumentException("Hợp đồng không còn ACTIVE nên không thể thêm người");
         }
 
-        // Nếu người này đã tồn tại nhưng trước đó đã moveOut => cho vào lại bằng cách set moveOutDate=null
         var existed = memberRepo.findByContractIdAndTenantId(contractId, m.getTenantId());
         if (existed.isPresent()) {
             NvtContractMember ex = existed.get();
             if (ex.getMoveOutDate() == null) {
                 throw new IllegalArgumentException("Người này đã có trong hợp đồng");
             }
-            // cho vào lại
             ex.setMoveOutDate(null);
-            if (m.getMoveInDate() != null) ex.setMoveInDate(m.getMoveInDate());
-            else ex.setMoveInDate(LocalDate.now());
-
+            ex.setMoveInDate(m.getMoveInDate() != null ? m.getMoveInDate() : LocalDate.now());
             if (m.getRelation() != null) ex.setRelation(m.getRelation());
             memberRepo.save(ex);
             return;
@@ -160,12 +181,11 @@ public class NvtContractServiceImpl implements NvtContractService {
 
         boolean isRepresentative = contract.getTenantId() != null && contract.getTenantId().equals(tenantId);
 
-        // RULE: chỉ cấm đại diện rời khi hợp đồng còn ACTIVE
+        // chỉ cấm đại diện rời khi hợp đồng còn ACTIVE
         if (isRepresentative && contract.getStatus() == NvtContract.ContractStatus.ACTIVE) {
             throw new IllegalArgumentException("Không thể cho người đại diện rời phòng khi hợp đồng còn ACTIVE. (Muốn đổi đại diện cần chức năng nâng cấp).");
         }
 
-        // Soft remove: set moveOutDate
         cm.setMoveOutDate(LocalDate.now());
         memberRepo.save(cm);
     }
@@ -182,6 +202,13 @@ public class NvtContractServiceImpl implements NvtContractService {
         c.setStatus(NvtContract.ContractStatus.ENDED);
         if (c.getEndDate() == null) c.setEndDate(LocalDate.now());
         contractRepo.save(c);
+
+        // ✅ Đồng bộ phòng: END => room EMPTY
+        if (c.getRoomId() != null) {
+            NvtRoom room = requireRoom(c.getRoomId());
+            room.setStatus(NvtRoom.RoomStatus.EMPTY);
+            roomRepo.save(room);
+        }
 
         // Chốt luôn danh sách ở ghép: ai chưa có ngày ra thì set ngày ra = endDate
         LocalDate out = c.getEndDate();
@@ -203,10 +230,21 @@ public class NvtContractServiceImpl implements NvtContractService {
             throw new IllegalArgumentException("Hợp đồng đã CANCELLED nên không thể tiếp tục");
         }
 
-        // Mở lại
+        // ✅ Chặn resume nếu phòng đang có ACTIVE khác
+        if (c.getRoomId() != null && contractRepo.existsByRoomIdAndStatus(c.getRoomId(), NvtContract.ContractStatus.ACTIVE)) {
+            throw new IllegalArgumentException("Phòng này đang có hợp đồng ACTIVE khác. Không thể tiếp tục hợp đồng này.");
+        }
+
         c.setStatus(NvtContract.ContractStatus.ACTIVE);
-        c.setEndDate(null); // nếu bạn muốn giữ endDate thì bỏ dòng này
+        c.setEndDate(null);
         contractRepo.save(c);
+
+        // ✅ Đồng bộ phòng: RESUME => room RENTING
+        if (c.getRoomId() != null) {
+            NvtRoom room = requireRoom(c.getRoomId());
+            room.setStatus(NvtRoom.RoomStatus.RENTING);
+            roomRepo.save(room);
+        }
 
         // đảm bảo đại diện vẫn đang "ở trong phòng"
         if (c.getTenantId() != null) {

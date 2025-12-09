@@ -17,4 +17,7 @@ public interface NvtContractRepository extends JpaRepository<NvtContract, Long> 
     List<NvtContract> findByRoomIdOrderByIdDesc(Long roomId);
 
     List<NvtContract> findByTenantIdOrderByIdDesc(Long tenantId);
+
+    // ✅ NEW: chặn 1 phòng chỉ có 1 ACTIVE
+    boolean existsByRoomIdAndStatus(Long roomId, NvtContract.ContractStatus status);
 }
