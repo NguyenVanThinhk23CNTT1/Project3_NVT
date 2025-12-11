@@ -34,7 +34,7 @@
                 <!-- Nhà trọ -->
                 <div class="col-md-6">
                     <label class="form-label">Nhà trọ *</label>
-                    <select class="form-select" th:field="*{hostelId}" required>
+                    <select class="form-select" th:field="*{hostel.id}" required>
                         <option value="">-- Chọn nhà trọ --</option>
                         <option th:each="h : ${hostels}"
                                 th:value="${h.id}"

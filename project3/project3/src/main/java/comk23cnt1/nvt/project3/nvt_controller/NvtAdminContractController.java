@@ -191,9 +191,10 @@ public class NvtAdminContractController {
         String base = (code.isBlank() && name.isBlank())
                 ? ("Room#" + r.getId())
                 : (code + (name.isBlank() ? "" : " - " + name));
-        if (r.getHostelId() != null) {
-            base += " (hostelId=" + r.getHostelId() + ")";
+        if (r.getHostel() != null && r.getHostel().getId() != null) {
+            base += " (hostelId=" + r.getHostel().getId() + ")";
         }
+
         return base;
     }
 

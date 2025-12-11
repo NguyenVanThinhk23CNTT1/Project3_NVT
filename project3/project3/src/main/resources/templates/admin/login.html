@@ -4,41 +4,326 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Admin Login</title>
+
+    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --radius: 18px;
+            --ink: #0f172a;
+            --muted: #64748b;
+        }
+
+        /* Full background image + overlay */
+        body{
+            min-height: 100vh;
+            margin: 0;
+            background: #0b1220;
+            position: relative;
+            overflow-x: hidden;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+        }
+        body::before{
+            content:"";
+            position: fixed;
+            inset: 0;
+            background-image: url('/anhdaidien.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transform: scale(1.03);
+            filter: saturate(1.08) contrast(1.05);
+            z-index: -3;
+        }
+        body::after{
+            content:"";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(900px 500px at 18% 12%, rgba(34,199,199,.30), transparent 55%),
+                radial-gradient(900px 500px at 85% 20%, rgba(99,102,241,.28), transparent 55%),
+                linear-gradient(180deg, rgba(2,6,23,.55), rgba(2,6,23,.70));
+            z-index: -2;
+        }
+
+        /* Floating blobs */
+        .blob{
+            position: fixed;
+            width: 520px;
+            height: 520px;
+            border-radius: 999px;
+            filter: blur(45px);
+            opacity: .35;
+            z-index: -1;
+            animation: floaty 9s ease-in-out infinite;
+        }
+        .blob.a{ left: -140px; top: -140px; background: #22c7c7; }
+        .blob.b{ right: -170px; top: 40px; background: #6366f1; animation-delay: -3s; }
+        .blob.c{ left: 20%; bottom: -260px; background: #0ea5a5; animation-delay: -6s; }
+
+        @keyframes floaty{
+            0%,100%{ transform: translateY(0) translateX(0) scale(1); }
+            50%{ transform: translateY(20px) translateX(10px) scale(1.03); }
+        }
+
+        /* Center layout */
+        .wrap{
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 28px 14px;
+        }
+
+        /* Card glass */
+        .cardX{
+            width: min(440px, 94vw);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,.18);
+            background: rgba(255,255,255,.10);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 18px 60px rgba(0,0,0,.35);
+            overflow: hidden;
+            transform: translateY(8px);
+            opacity: 0;
+            animation: popIn .55s ease forwards;
+        }
+        @keyframes popIn{
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .cardTop{
+            padding: 18px 18px 10px 18px;
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+            color: #fff;
+        }
+        .logo{
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(34,199,199,.95), rgba(99,102,241,.92));
+            box-shadow: 0 16px 35px rgba(34,199,199,.22);
+            display:flex; align-items:center; justify-content:center;
+            overflow: hidden;
+        }
+        .logo img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand .t1{
+            font-weight: 900;
+            letter-spacing: .2px;
+            line-height: 1.05;
+        }
+        .brand .t2{
+            font-size: .86rem;
+            color: rgba(255,255,255,.72);
+            margin-top: 2px;
+        }
+
+        .divider{
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+            margin: 0 18px;
+        }
+
+        .cardBody{
+            padding: 18px;
+        }
+
+        .hint{
+            color: rgba(255,255,255,.75);
+            font-size: .92rem;
+            margin-bottom: 14px;
+        }
+
+        .form-label{
+            color: rgba(255,255,255,.85);
+            font-weight: 650;
+            font-size: .9rem;
+        }
+
+        .form-control{
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.22);
+            background: rgba(255,255,255,.10);
+            color: #fff;
+            padding: .7rem .9rem;
+        }
+        .form-control::placeholder{ color: rgba(255,255,255,.55); }
+        .form-control:focus{
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            border-color: rgba(34,199,199,.65);
+            box-shadow: 0 0 0 .22rem rgba(34,199,199,.18);
+        }
+
+        .btnX{
+            border-radius: 14px;
+            padding: .72rem 1rem;
+            font-weight: 800;
+            border: none;
+            color: #06121b;
+            background: linear-gradient(135deg, #22c7c7, #0ea5a5);
+            box-shadow: 0 18px 35px rgba(34,199,199,.20);
+            transition: transform .15s ease, filter .15s ease;
+        }
+        .btnX:hover{
+            transform: translateY(-1px);
+            filter: brightness(.98);
+        }
+        .btnX:active{ transform: translateY(0); }
+
+        .miniRow{
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            margin-top: 8px;
+            gap: 10px;
+        }
+
+        .link{
+            color: rgba(255,255,255,.78);
+            text-decoration: none;
+        }
+        .link:hover{ color: #fff; text-decoration: underline; }
+
+        .alert{
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.18);
+        }
+        .alert-danger{
+            background: rgba(239,68,68,.16);
+            color: #fff;
+        }
+        .alert-success{
+            background: rgba(34,197,94,.16);
+            color: #fff;
+        }
+
+        .footer{
+            padding: 14px 18px 18px;
+            color: rgba(255,255,255,.65);
+            font-size: .86rem;
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        /* small helper */
+        .kbd{
+            font-size: .78rem;
+            color: rgba(255,255,255,.70);
+            border: 1px solid rgba(255,255,255,.22);
+            padding: .18rem .45rem;
+            border-radius: 10px;
+            background: rgba(255,255,255,.08);
+        }
+    </style>
 </head>
-<body class="bg-light">
 
-<div class="container py-5" style="max-width: 460px">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-            <h4 class="mb-1">Đăng nhập Admin</h4>
-            <div class="text-muted mb-3">Chỉ dành cho quản trị hệ thống</div>
+<body>
+<div class="blob a"></div>
+<div class="blob b"></div>
+<div class="blob c"></div>
 
-            <div th:if="${param.error}" class="alert alert-danger">
+<div class="wrap">
+    <div class="cardX">
+        <div class="cardTop">
+            <div class="brand">
+                <!-- Bạn có thể đổi logo ở đây: dùng ảnh anhdaidien làm logo cũng được -->
+                <div class="logo">
+                    <img src="/anhdaidien.jpg" alt="Logo">
+                </div>
+                <div>
+                    <div class="t1">ADMIN</div>
+                    <div class="t2">Đăng nhập quản trị hệ thống</div>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <span class="kbd">Enter</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="cardBody">
+            <div th:if="${param.error}" class="alert alert-danger py-2 px-3 mb-3">
+                <i class="bi bi-exclamation-triangle me-1"></i>
                 Sai tài khoản hoặc mật khẩu.
             </div>
-            <div th:if="${param.logout}" class="alert alert-success">
+            <div th:if="${param.logout}" class="alert alert-success py-2 px-3 mb-3">
+                <i class="bi bi-check-circle me-1"></i>
                 Đã đăng xuất.
             </div>
 
-            <form method="post" action="/admin/login" class="vstack gap-3">
+            <div class="hint">
+                Vui lòng nhập thông tin để truy cập trang quản trị.
+            </div>
+
+            <form method="post" action="/admin/login" class="vstack gap-3" autocomplete="off">
                 <div>
                     <label class="form-label">Username</label>
-                    <input class="form-control" name="username" required>
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:14px 0 0 14px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22); color:#fff;">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input class="form-control" name="username" required placeholder="admin"
+                               style="border-left:0; border-radius:0 14px 14px 0;">
+                    </div>
                 </div>
+
                 <div>
                     <label class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" required>
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:14px 0 0 14px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22); color:#fff;">
+                            <i class="bi bi-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" name="password" required placeholder="••••••••"
+                               style="border-left:0; border-radius:0 14px 14px 0;">
+                    </div>
                 </div>
-                <button class="btn btn-dark w-100">Login</button>
-            </form>
 
-            <div class="text-muted small mt-3">
-                Quay lại <a href="/">Trang chủ</a>
-            </div>
+                <button class="btn btnX w-100">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Đăng nhập
+                </button>
+
+                <div class="miniRow">
+                    <a class="link" href="/"><i class="bi bi-arrow-left"></i> Về trang chủ</a>
+                    <span class="text-white-50 small">Bảo mật • Admin only</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="footer">
+            <span>© NVT Admin</span>
+            <span class="text-white-50">v1.0</span>
         </div>
     </div>
 </div>
 
+<script>
+    // Auto focus username
+    window.addEventListener('load', () => {
+        const u = document.querySelector('input[name="username"]');
+        if (u) u.focus();
+    });
+</script>
 </body>
 </html>

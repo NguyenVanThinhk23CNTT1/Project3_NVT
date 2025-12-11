@@ -16,6 +16,11 @@
       Xin chào, <b th:text="${#authentication.name}">admin</b>
     </span>
 
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/admin/booking-requests}">Booking Requests</a>
+
+        <a class="btn btn-outline-primary btn-sm" th:href="@{/admin/feedbacks}">Feedbacks</a>
+
+
         <form th:if="${#authentication != null and #authentication.authenticated}"
               method="post" th:action="@{/admin/logout}" class="m-0">
             <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>

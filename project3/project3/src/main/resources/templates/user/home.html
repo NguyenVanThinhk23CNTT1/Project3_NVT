@@ -9,7 +9,7 @@
 
     <style>
         :root{
-            --brand: #22c7c7;         /* xanh ngọc kiểu phongtot */
+            --brand: #22c7c7;
             --brand-2: #0ea5a5;
             --brand-dark: #0b5564;
             --ink: #0f172a;
@@ -27,10 +27,16 @@
             z-index: 1030;
             background: #fff;
             border-bottom: 1px solid rgba(15,23,42,.08);
+            will-change: transform;
+            transition: transform .22s ease;
         }
-        .pt-container{
-            max-width: 1200px;
-        }
+        .pt-header.is-hidden{ transform: translateY(-100%); }
+
+        /* chừa khoảng trống để nội dung không bị che */
+        .header-spacer{ height: var(--header-h, 0px); }
+
+        .pt-container{ max-width: 1200px; }
+
         .brand{
             display:flex;
             gap:10px;
@@ -47,6 +53,7 @@
             justify-content:center;
             box-shadow: 0 .5rem 1rem rgba(34,199,199,.25);
             flex: 0 0 auto;
+            overflow:hidden;
         }
         .brand .name{
             font-weight: 900;
@@ -92,9 +99,7 @@
             border: none;
             color:#fff;
         }
-        .nav-pill.dark:hover{
-            background:#111c33;
-        }
+        .nav-pill.dark:hover{ background:#111c33; }
 
         /* Search bar */
         .search-wrap{
@@ -143,9 +148,7 @@
             text-decoration: underline;
             opacity: .95;
         }
-        .s-btn.reset:hover{
-            opacity: 1;
-        }
+        .s-btn.reset:hover{ opacity: 1; }
 
         /* Cards */
         .room-card{
@@ -173,24 +176,15 @@
             position:absolute; inset:0;
             background: linear-gradient(to bottom, rgba(0,0,0,.08), rgba(0,0,0,.45));
         }
-        .badge-top{
-            position:absolute;
-            top: 12px; left: 12px;
-        }
+        .badge-top{ position:absolute; top: 12px; left: 12px; }
         .room-title{
             position:absolute;
             bottom: 10px; left: 12px; right: 12px;
             color:#fff;
             text-shadow: 0 2px 10px rgba(0,0,0,.35);
         }
-        .room-title .code{
-            font-size: 1.1rem;
-            font-weight: 900;
-        }
-        .room-title .name{
-            font-size: .9rem;
-            opacity: .92;
-        }
+        .room-title .code{ font-size: 1.1rem; font-weight: 900; }
+        .room-title .name{ font-size: .9rem; opacity: .92; }
 
         .meta{
             display:flex;
@@ -201,14 +195,8 @@
         }
         .meta b{ color: var(--ink); }
 
-        .price{
-            font-weight: 900;
-            font-size: 1.05rem;
-        }
-        .btn-soft{
-            border-radius: 12px;
-            font-weight: 700;
-        }
+        .price{ font-weight: 900; font-size: 1.05rem; }
+        .btn-soft{ border-radius: 12px; font-weight: 700; }
 
         /* Headline */
         .headline{
@@ -216,38 +204,14 @@
             font-weight: 950;
             letter-spacing: -.6px;
         }
-        .subline{
-            color: var(--muted);
-        }
+        .subline{ color: var(--muted); }
 
-        /* Small breadcrumb */
-        .crumb{
-            color: var(--muted);
-            font-size: .9rem;
-        }
-        .crumb a{
-            color: var(--muted);
-            text-decoration:none;
-        }
+        /* Breadcrumb */
+        .crumb{ color: var(--muted); font-size: .9rem; }
+        .crumb a{ color: var(--muted); text-decoration:none; }
         .crumb a:hover{ text-decoration:underline; }
 
         /* Chat widget */
-        .chat-fab{
-            position: fixed;
-            right: 18px;
-            bottom: 18px;
-            z-index: 1050;
-        }
-        .chat-btn{
-            width: 56px; height: 56px;
-            border-radius: 999px;
-            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
-            border:none;
-            background: #0f172a;
-            color:#fff;
-            font-size: 20px;
-        }
-        .chat-btn:hover{ background:#111c33; }
         .chat-panel{
             position: fixed;
             right: 18px;
@@ -293,124 +257,73 @@
         }
         .chat-foot input{ border-radius: 999px; }
 
-        /* ===== Sticky searchbar: auto hide on scroll (không che card) ===== */
-.pt-header{
-    will-change: transform;
-    transition: transform .22s ease;
-}
-.pt-header.is-hidden{
-    transform: translateY(-100%);
-}
+        /* ===== Floating Support (robot + zalo + hotline) ===== */
+        .fab-stack{
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
 
-/* chừa khoảng trống đúng chiều cao header để nội dung không bị "nhảy" và không bị che */
-.header-spacer{
-    height: var(--header-h, 0px);
-}
+        .fab-item{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+            transition: all .18s ease;
+        }
 
-/* ===== Quick action (hotline + zalo) ===== */
-.nav-pill.hotline{
-    border-color: rgba(239, 68, 68, .35);
-}
-.nav-pill.hotline:hover{
-    border-color: rgba(239, 68, 68, .65);
-    box-shadow: 0 .75rem 1.5rem rgba(239, 68, 68, .12);
-}
+        .fab-label{
+            background:#fff;
+            border: 1px solid rgba(15,23,42,.10);
+            color: #0f172a;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: .9rem;
+            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
+            white-space: nowrap;
+        }
 
-.nav-pill.zalo{
-    border-color: rgba(34, 197, 94, .35);
-}
-.nav-pill.zalo:hover{
-    border-color: rgba(34, 197, 94, .65);
-    box-shadow: 0 .75rem 1.5rem rgba(34, 197, 94, .12);
-}
+        .fab-btn{
+            width: 56px;
+            height: 56px;
+            border-radius: 999px;
+            border: none;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
+            font-size: 22px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform .15s ease, filter .15s ease;
+        }
+        .fab-btn:hover{ transform: translateY(-1px); filter: brightness(1.05); }
 
-        /* ===== Floating actions: Zalo + Hotline + Robot ===== */
-.fab-stack{
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 1050;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-}
+        .fab-robot{ background:#0f172a; color:#fff; }
+        .fab-hotline{ background:#ef4444; color:#fff; }
+        .fab-zalo{ background:#22c55e; color:#fff; }
 
-.fab-pill{
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    text-decoration: none;
-    border: 1px solid rgba(15,23,42,.12);
-    background: #fff;
-    color: var(--ink);
-    box-shadow: 0 .75rem 1.5rem rgba(2,6,23,.12);
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-    font-weight: 800;
-    font-size: .92rem;
-    line-height: 1;
-}
+        /* đóng: ẩn 2 nút phụ */
+        .fab-stack.is-collapsed .fab-secondary{
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+        }
+        .fab-stack.is-collapsed .fab-secondary .fab-label{
+            opacity: 0;
+            transform: translateX(8px);
+        }
 
-.fab-pill:hover{
-    transform: translateY(-1px);
-    box-shadow: 0 1rem 2rem rgba(2,6,23,.16);
-    border-color: rgba(34,199,199,.6);
-}
-
-.fab-ico{
-    width: 38px;
-    height: 38px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #fff;
-    flex: 0 0 auto;
-}
-
-.fab-pill.zalo .fab-ico{ background: #22c55e; }
-.fab-pill.hotline .fab-ico{ background: #ef4444; }
-
-.fab-pill .sub{
-    font-weight: 700;
-    color: var(--muted);
-    font-size: .82rem;
-    margin-top: 2px;
-}
-
-/* Nút robot tròn */
-.fab-robot{
-    width: 56px;
-    height: 56px;
-    border-radius: 999px;
-    box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18);
-    border: none;
-    background: #0f172a;
-    color: #fff;
-    font-size: 22px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition: transform .15s ease, filter .15s ease;
-}
-.fab-robot:hover{
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-}
-
-/* Mobile: thu gọn chữ, chỉ để icon + số */
-@media (max-width: 576px){
-    .fab-pill{
-        padding: 10px 12px;
-    }
-    .fab-pill .text-wrap{
-        display:none;
-    }
-}
-
+        @media (max-width: 576px){
+            .fab-label{ display:none; }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -491,6 +404,7 @@
     </div>
 </header>
 <div class="header-spacer"></div>
+
 <!-- CONTENT -->
 <div class="container pt-container py-4">
 
@@ -590,31 +504,31 @@
     </div>
 </div>
 
-<!-- Floating actions: Zalo + Hotline + Robot -->
-<div class="fab-stack">
+<!-- Floating Support Buttons (tròn + bung ra) -->
+<div class="fab-stack is-collapsed" id="fabStack">
+
     <!-- Zalo -->
-    <a class="fab-pill zalo" target="_blank" href="https://zalo.me/0343841111" title="Chat Zalo">
-        <span class="fab-ico">💚</span>
-        <span class="text-wrap">
-            Zalo hỗ trợ
-            <div class="sub">Nhấn để chat</div>
-        </span>
-    </a>
+    <div class="fab-item fab-secondary">
+        <div class="fab-label">Zalo hỗ trợ</div>
+        <a class="fab-btn fab-zalo"
+           href="https://zalo.me/0343841111"
+           target="_blank" rel="noopener"
+           title="Zalo hỗ trợ">💬</a>
+    </div>
 
     <!-- Hotline -->
-    <a class="fab-pill hotline" href="tel:0343841111" title="Gọi hotline">
-        <span class="fab-ico">☎</span>
-        <span class="text-wrap">
-            Hotline
-            <div class="sub">0343841111</div>
-        </span>
-        <span class="d-sm-none fw-bold">0343841111</span>
-    </a>
+    <div class="fab-item fab-secondary">
+        <div class="fab-label">Hotline 0343841111</div>
+        <a class="fab-btn fab-hotline"
+           href="tel:0343841111"
+           title="Gọi hotline">☎</a>
+    </div>
 
-    <!-- Robot -->
-    <button class="fab-robot" type="button" id="chatToggle" title="Robot hỗ trợ">🤖</button>
+    <!-- Robot: bấm để mở/đóng menu -->
+    <div class="fab-item">
+        <button class="fab-btn fab-robot" type="button" id="fabToggle" title="Robot hỗ trợ">🤖</button>
+    </div>
 </div>
-
 
 <script>
     // ====== Front-end filter (không cần backend) ======
@@ -640,7 +554,6 @@
         const q = normalizeText(document.getElementById('q').value);
         const priceRange = document.getElementById('price').value;
         const areaRange = document.getElementById('area').value;
-        // type để sẵn UI; hiện bạn chưa có field loại phòng => chỉ dùng keyword (optional)
         const type = document.getElementById('type').value;
 
         const items = Array.from(document.querySelectorAll('.room-item'));
@@ -656,8 +569,6 @@
             const matchQ = !q || (code.includes(q) || name.includes(q) || desc.includes(q));
             const matchPrice = Number.isFinite(price) ? inRange(price, priceRange) : (priceRange ? false : true);
             const matchArea = Number.isFinite(area) ? inRange(area, areaRange) : (areaRange ? false : true);
-
-            // type: nếu người dùng chọn type thì sẽ yêu cầu keyword có chứa (mini/phongtro/nguyencan)
             const matchType = !type || (desc.includes(type) || name.includes(type) || code.includes(type));
 
             const ok = matchQ && matchPrice && matchArea && matchType;
@@ -671,10 +582,7 @@
     }
 
     document.getElementById('btnSearch').addEventListener('click', applyFilter);
-    document.getElementById('q').addEventListener('input', () => {
-        // lọc realtime nhẹ
-        applyFilter();
-    });
+    document.getElementById('q').addEventListener('input', applyFilter);
 
     document.getElementById('btnReset').addEventListener('click', () => {
         document.getElementById('q').value = '';
@@ -685,13 +593,11 @@
         document.getElementById('q').focus();
     });
 
-    // initial
     applyFilter();
 
     // ====== Chat widget ======
     (function(){
         const panel = document.getElementById('chatPanel');
-        const toggle = document.getElementById('chatToggle');
         const closeBtn = document.getElementById('chatClose');
         const body = document.getElementById('chatBody');
         const input = document.getElementById('chatInput');
@@ -700,10 +606,6 @@
         const open = () => { panel.style.display='block'; panel.setAttribute('aria-hidden','false'); input.focus(); };
         const close = () => { panel.style.display='none'; panel.setAttribute('aria-hidden','true'); };
 
-        toggle.addEventListener('click', () => {
-            const isOpen = panel.style.display === 'block';
-            isOpen ? close() : open();
-        });
         closeBtn.addEventListener('click', close);
 
         const addMsg = (text, who) => {
@@ -720,7 +622,7 @@
             if (s.includes('dưới 3') || s.includes('3 triệu')) {
                 document.getElementById('price').value = '2000000-3000000';
                 applyFilter();
-                return 'Mình đã lọc <b>2–3 triệu</b> cho bạn ở thanh “Giá phòng” rồi nhé ✅';
+                return 'Mình đã lọc <b>2–3 triệu</b> cho bạn ✅';
             }
             if (s.includes('dưới 2') || s.includes('2 triệu')) {
                 document.getElementById('price').value = '0-2000000';
@@ -733,9 +635,9 @@
                 return 'Mình đã lọc <b>dưới 20m²</b> ✅';
             }
             if (s.includes('thủ tục') || s.includes('giấy tờ')) {
-                return 'Thường cần CCCD + đặt cọc. Bạn bấm “Xem phòng” → “Gửi yêu cầu” để admin liên hệ hẹn lịch xem phòng/ký hợp đồng.';
+                return 'Thường cần CCCD + đặt cọc. Bạn bấm “Xem phòng” → “Gửi yêu cầu” để admin liên hệ.';
             }
-            return 'Bạn muốn mình lọc theo <b>giá</b> hay <b>diện tích</b>? Ví dụ: “giá dưới 3 triệu”, “diện tích 20-30”.';
+            return 'Bạn muốn mình lọc theo <b>giá</b> hay <b>diện tích</b>? Ví dụ: “giá dưới 3 triệu”.';
         };
 
         const onSend = () => {
@@ -750,47 +652,66 @@
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') onSend();
         });
+
+        // expose open/close for fab
+        window.__openChat = open;
+        window.__closeChat = close;
     })();
 
     // ===== Auto-hide HEADER when scroll down, show when scroll up =====
-(function(){
-    const header = document.querySelector('.pt-header');
-    const spacer = document.querySelector('.header-spacer');
+    (function(){
+        const header = document.querySelector('.pt-header');
+        const spacer = document.querySelector('.header-spacer');
+        if (!header || !spacer) return;
 
-    if (!header || !spacer) return;
+        const setSpacerHeight = () => {
+            const h = header.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--header-h', h + 'px');
+            spacer.style.height = 'var(--header-h)';
+        };
 
-    const setSpacerHeight = () => {
-        const h = header.getBoundingClientRect().height;
-        document.documentElement.style.setProperty('--header-h', h + 'px');
-        spacer.style.height = 'var(--header-h)';
-    };
+        setSpacerHeight();
+        window.addEventListener('resize', setSpacerHeight);
 
-    setSpacerHeight();
-    window.addEventListener('resize', setSpacerHeight);
+        let lastY = window.scrollY;
+        let ticking = false;
 
-    let lastY = window.scrollY;
-    let ticking = false;
+        const onScroll = () => {
+            const y = window.scrollY;
+            if (y > lastY && y > 120) header.classList.add('is-hidden');
+            if (y < lastY) header.classList.remove('is-hidden');
+            lastY = y;
+            ticking = false;
+        };
 
-    const onScroll = () => {
-        const y = window.scrollY;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(onScroll);
+                ticking = true;
+            }
+        }, { passive: true });
+    })();
 
-        // cuộn xuống và vượt qua 120px thì ẩn
-        if (y > lastY && y > 120) header.classList.add('is-hidden');
-        // cuộn lên thì hiện
-        if (y < lastY) header.classList.remove('is-hidden');
+    // ====== Toggle tròn: bấm robot bung ra Zalo/Hotline + mở chat ======
+    (function(){
+        const stack = document.getElementById('fabStack');
+        const btn = document.getElementById('fabToggle');
+        if (!stack || !btn) return;
 
-        lastY = y;
-        ticking = false;
-    };
+        btn.addEventListener('click', () => {
+            // bung/thu 2 nút phụ
+            stack.classList.toggle('is-collapsed');
+            // mở chat luôn cho đúng "robot"
+            if (!stack.classList.contains('is-collapsed')) {
+                if (window.__openChat) window.__openChat();
+            }
+        });
 
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(onScroll);
-            ticking = true;
-        }
-    }, { passive: true });
-})();
-
+        // click ra ngoài thì thu lại (không tắt chat)
+        document.addEventListener('click', (e) => {
+            if (!stack.contains(e.target)) stack.classList.add('is-collapsed');
+        });
+    })();
 </script>
 
 </body>

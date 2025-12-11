@@ -33,14 +33,15 @@
                 <!-- Nhà trọ / địa chỉ -->
                 <div class="col-md-6">
                     <label class="form-label">Nhà trọ *</label>
-                    <select class="form-select" th:field="*{hostelId}" required>
+                    <!-- Bind vào room.hostel.id -->
+                    <select class="form-select" th:field="*{hostel.id}" required>
                         <option value="">-- Chọn nhà trọ --</option>
                         <option th:each="h : ${hostels}"
                                 th:value="${h.id}"
                                 th:text="${h.name + ' - ' + h.address}">
                         </option>
                     </select>
-                    <div class="form-text">Vì hệ thống quản lý nhiều nhà trọ, mỗi phòng thuộc 1 nhà trọ.</div>
+                    <div class="form-text">Mỗi phòng thuộc 1 nhà trọ.</div>
                 </div>
 
                 <div class="col-md-6">
@@ -78,7 +79,8 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Giá thuê *</label>
-                    <input type="number" class="form-control" th:field="*{rentPrice}" placeholder="1500000" required min="1">
+                    <input type="number" class="form-control" th:field="*{rentPrice}"
+                           placeholder="1500000" required min="1">
                 </div>
 
                 <div class="col-md-3">
@@ -129,7 +131,7 @@
                         <td th:text="${r.id}"></td>
 
                         <td style="width:90px;">
-                            <img th:if="${r.imageUrl}" th:src="${r.imageUrl}"
+                            <img th:if="${r.imageUrl != null}" th:src="${r.imageUrl}"
                                  class="rounded border" style="width:72px;height:48px;object-fit:cover;">
                             <span th:if="${r.imageUrl == null}" class="text-muted small">No image</span>
                         </td>
@@ -137,18 +139,21 @@
                         <td th:text="${r.roomCode}"></td>
                         <td th:text="${r.roomName}"></td>
 
-                        <!-- nếu bạn có map hostelName sẵn trong Room DTO thì dùng hostelName.
-                             Còn không, tạm hiển thị hostelId -->
-                        <td th:text="${'Hostel #' + r.hostelId}"></td>
+                        <!-- ✅ Hiển thị nhà trọ theo quan hệ r.hostel -->
+                        <td>
+                            <span th:if="${r.hostel != null}"
+                                  th:text="${r.hostel.name + ' - ' + r.hostel.address}"></span>
+                            <span th:if="${r.hostel == null}" class="text-muted small">Chưa gán nhà trọ</span>
+                        </td>
 
                         <td th:text="${r.floor}"></td>
                         <td th:text="${r.maxPeople}"></td>
                         <td th:text="${r.rentPrice}"></td>
 
                         <td>
-                            <span class="badge bg-success" th:if="${r.status.name() == 'EMPTY'}">EMPTY</span>
-                            <span class="badge bg-warning text-dark" th:if="${r.status.name() == 'RENTING'}">RENTING</span>
-                            <span class="badge bg-secondary" th:if="${r.status.name() == 'REPAIR'}">REPAIR</span>
+                            <span class="badge bg-success" th:if="${r.status != null and r.status.name() == 'EMPTY'}">EMPTY</span>
+                            <span class="badge bg-warning text-dark" th:if="${r.status != null and r.status.name() == 'RENTING'}">RENTING</span>
+                            <span class="badge bg-secondary" th:if="${r.status != null and r.status.name() == 'REPAIR'}">REPAIR</span>
                         </td>
 
                         <td class="text-end">

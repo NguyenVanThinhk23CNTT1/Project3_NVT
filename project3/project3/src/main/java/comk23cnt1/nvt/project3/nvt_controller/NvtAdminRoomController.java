@@ -1,5 +1,6 @@
 package comk23cnt1.nvt.project3.nvt_controller;
 
+import comk23cnt1.nvt.project3.nvt_entity.NvtHostel;
 import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
 import comk23cnt1.nvt.project3.nvt_service.NvtHostelService;
 import comk23cnt1.nvt.project3.nvt_service.NvtRoomService;
@@ -22,11 +23,21 @@ public class NvtAdminRoomController {
     }
 
     @GetMapping
-    public String list(Model model) {
+    public String list(Model model,
+                       @ModelAttribute("msg") String msg,
+                       @ModelAttribute("err") String err) {
+
+        // ✅ quan trọng: để bind th:field="*{hostel.id}" không bị null
+        NvtRoom newRoom = new NvtRoom();
+        newRoom.setHostel(new NvtHostel());
+
         model.addAttribute("rooms", roomService.findAll());
-        model.addAttribute("newRoom", new NvtRoom());
+        model.addAttribute("newRoom", newRoom);
         model.addAttribute("statuses", NvtRoom.RoomStatus.values());
-        model.addAttribute("hostels", hostelService.findAll()); // thêm nhà trọ
+        model.addAttribute("hostels", hostelService.findAll());
+
+        model.addAttribute("msg", msg);
+        model.addAttribute("err", err);
         return "admin/rooms";
     }
 
@@ -35,7 +46,7 @@ public class NvtAdminRoomController {
                          @RequestParam(name = "imageFile", required = false) MultipartFile imageFile,
                          RedirectAttributes ra) {
         try {
-            roomService.create(newRoom, imageFile); // service mới: nhận file
+            roomService.create(newRoom, imageFile);
             ra.addFlashAttribute("msg", "Thêm phòng thành công");
             return "redirect:/admin/rooms";
         } catch (Exception e) {
@@ -46,24 +57,29 @@ public class NvtAdminRoomController {
 
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable Long id, Model model,
-                       @ModelAttribute("err") String err,
-                       @ModelAttribute("msg") String msg) {
-        model.addAttribute("room", roomService.findById(id));
+                       @ModelAttribute("msg") String msg,
+                       @ModelAttribute("err") String err) {
+
+        NvtRoom room = roomService.findById(id);
+
+        // ✅ phòng cũ nếu hostel null thì cũng set để form không lỗi
+        if (room.getHostel() == null) room.setHostel(new NvtHostel());
+
+        model.addAttribute("room", room);
         model.addAttribute("statuses", NvtRoom.RoomStatus.values());
         model.addAttribute("hostels", hostelService.findAll());
-        model.addAttribute("err", err);
         model.addAttribute("msg", msg);
+        model.addAttribute("err", err);
         return "admin/room-edit";
     }
 
-
     @PostMapping("/update/{id}")
     public String update(@PathVariable Long id,
-                         @ModelAttribute NvtRoom room,
+                         @ModelAttribute("room") NvtRoom room,
                          @RequestParam(name = "imageFile", required = false) MultipartFile imageFile,
                          RedirectAttributes ra) {
         try {
-            roomService.update(id, room, imageFile); // service mới: nhận file
+            roomService.update(id, room, imageFile);
             ra.addFlashAttribute("msg", "Cập nhật thành công");
             return "redirect:/admin/rooms";
         } catch (Exception e) {

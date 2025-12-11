@@ -8,18 +8,27 @@
 <body class="bg-light">
 <div class="container py-4">
 
-    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h4 class="mb-0">Phản ánh / Sự cố</h4>
-            <div class="text-muted small">Admin xử lý phản ánh</div>
-        </div>
-        <a class="btn btn-outline-secondary" href="/admin">← Dashboard</a>
-    </div>
+    <div th:replace="~{admin/fragments/topbar :: topbar('Phản ánh / Sự cố')}"></div>
 
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="text-muted small">
+            NEW: <span class="badge bg-primary" th:text="${newCount}">0</span>
+        </div>
+
+        <form method="get" th:action="@{/admin/feedbacks}" class="d-flex gap-2">
+            <select class="form-select form-select-sm" name="status" style="width: 220px">
+                <option value="" th:selected="${status == null || status == ''}">Tất cả trạng thái</option>
+                <option th:each="s: ${statuses}"
+                        th:value="${s.name()}"
+                        th:selected="${status != null && status == s.name()}"
+                        th:text="${s.name()}"></option>
+            </select>
+            <button class="btn btn-sm btn-primary" type="submit">Lọc</button>
+        </form>
+    </div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-body">
@@ -41,27 +50,53 @@
                         <td th:text="${f.id}"></td>
                         <td th:text="${f.roomId}"></td>
                         <td th:text="${f.tenantId}"></td>
-                        <td>
-                            <div class="fw-semibold" th:text="${f.title}"></div>
-                            <div class="text-muted small" th:text="${f.content}"></div>
+
+                        <td style="max-width: 360px">
+                            <div class="fw-semibold d-flex align-items-center gap-2">
+                                <span th:text="${f.title}"></span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target=${'#m' + f.id}">
+                                    Xem
+                                </button>
+                            </div>
+                            <div class="text-muted small" th:text="${#strings.abbreviate(f.content, 90)}"></div>
+
+                            <div class="small mt-1" th:if="${f.adminNote != null && !#strings.isEmpty(f.adminNote)}">
+                                <span class="badge text-bg-light">admin note</span>
+                                <span class="text-muted" th:text="${#strings.abbreviate(f.adminNote, 80)}"></span>
+                            </div>
                         </td>
+
                         <td>
                             <span class="badge bg-primary" th:if="${f.status.name()=='NEW'}">NEW</span>
                             <span class="badge bg-warning text-dark" th:if="${f.status.name()=='IN_PROGRESS'}">IN_PROGRESS</span>
                             <span class="badge bg-success" th:if="${f.status.name()=='DONE'}">DONE</span>
                         </td>
+
                         <td th:text="${f.createdAt}"></td>
+
                         <td class="text-end">
                             <form method="post" th:action="@{'/admin/feedbacks/status/' + ${f.id}}" class="d-inline">
                                 <select class="form-select form-select-sm d-inline-block" style="width: 160px" name="status">
-                                    <option th:each="s: ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s==f.status}"></option>
+                                    <option th:each="s: ${statuses}"
+                                            th:value="${s.name()}"
+                                            th:text="${s.name()}"
+                                            th:selected="${s==f.status}"></option>
                                 </select>
-                                <button class="btn btn-sm btn-outline-primary">Lưu</button>
+
+                                <input class="form-control form-control-sm d-inline-block ms-1"
+                                       style="width: 220px"
+                                       name="adminNote"
+                                       th:value="${f.adminNote}"
+                                       placeholder="Ghi chú admin (tuỳ chọn)">
+
+                                <button class="btn btn-sm btn-outline-primary ms-1" type="submit">Lưu</button>
                             </form>
 
                             <form method="post" th:action="@{'/admin/feedbacks/delete/' + ${f.id}}"
                                   class="d-inline" onsubmit="return confirm('Xóa phản ánh này?');">
-                                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" type="submit">Xóa</button>
                             </form>
                         </td>
                     </tr>
@@ -74,11 +109,49 @@
             </div>
 
             <div class="text-muted small mt-2">
-                Tạm hiển thị roomId/tenantId để làm nhanh. Sau sẽ map ra tên phòng/tên khách.
+                Tip: Bấm “Xem” để đọc full nội dung trong popup.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div th:each="f : ${feedbacks}">
+        <div class="modal fade" th:id="${'m' + f.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title mb-0" th:text="${f.title}"></h5>
+                            <div class="text-muted small">
+                                ID: <b th:text="${f.id}"></b> • RoomId: <b th:text="${f.roomId}"></b> • TenantId: <b th:text="${f.tenantId}"></b>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <span class="badge bg-primary" th:if="${f.status.name()=='NEW'}">NEW</span>
+                            <span class="badge bg-warning text-dark" th:if="${f.status.name()=='IN_PROGRESS'}">IN_PROGRESS</span>
+                            <span class="badge bg-success" th:if="${f.status.name()=='DONE'}">DONE</span>
+                            <span class="text-muted small ms-2" th:text="${f.createdAt}"></span>
+                        </div>
+
+                        <div class="fw-semibold">Nội dung</div>
+                        <div class="text-muted" style="white-space: pre-wrap" th:text="${f.content}"></div>
+
+                        <hr>
+
+                        <div class="fw-semibold">Ghi chú admin</div>
+                        <div class="text-muted" style="white-space: pre-wrap"
+                             th:text="${f.adminNote != null ? f.adminNote : '—'}"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

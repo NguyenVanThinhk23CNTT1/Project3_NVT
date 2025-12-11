@@ -18,7 +18,6 @@
         }
         body{ color:var(--ink); }
 
-        /* Header (đồng bộ home) */
         .pt-header{
             position: sticky;
             top: 0;
@@ -79,7 +78,6 @@
             box-shadow: 0 .9rem 2rem rgba(34,199,199,.25);
         }
 
-        /* Hero */
         .hero{
             border-radius: var(--radius);
             overflow:hidden;
@@ -112,7 +110,6 @@
         .price{ font-size: 1.55rem; font-weight: 950; }
         .btn-soft{ border-radius: 14px; font-weight: 800; }
 
-        /* Chat widget */
         .chat-fab{ position: fixed; right: 18px; bottom: 18px; z-index: 1050; display:flex; flex-direction:column; gap:10px; }
         .chat-btn{
             width: 56px; height: 56px;
@@ -188,7 +185,10 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <a class="nav-pill" href="/">🏠 Trang chủ</a>
             <a class="nav-pill" href="/bills">🧾 Tra hóa đơn</a>
-            <a class="nav-pill" href="/feedback">🛠️ Phản ánh</a>
+
+            <!-- ✅ mở form feedback và tự chọn sẵn roomId -->
+            <a class="nav-pill" th:href="@{/feedback(roomId=${room.id})}">🛠️ Phản ánh</a>
+
             <button class="nav-pill primary" type="button" id="chatOpenTop">🤖 Hỗ trợ</button>
         </div>
     </div>
@@ -209,6 +209,12 @@
         <div class="info">
             <div class="code" th:text="${room.roomCode != null ? room.roomCode : ('#' + room.id)}"></div>
             <div class="name" th:text="${room.roomName != null ? room.roomName : 'Phòng trọ'}"></div>
+
+            <!-- ✅ Hiện địa chỉ nhà trọ -->
+            <div class="small mt-1">
+                📍 <span th:text="${room.hostel != null ? room.hostel.address : 'Chưa có địa chỉ'}"></span>
+            </div>
+
             <div class="small mt-1">
                 Trạng thái:
                 <span class="badge bg-success" th:if="${room.status != null && room.status.name()=='EMPTY'}">EMPTY</span>
@@ -246,7 +252,21 @@
                     <div class="row g-2 small">
                         <div class="col-md-6"><b>Mã phòng:</b> <span th:text="${room.roomCode}"></span></div>
                         <div class="col-md-6"><b>Tên phòng:</b> <span th:text="${room.roomName}"></span></div>
-                        <div class="col-md-6"><b>Hostel ID:</b> <span th:text="${room.hostelId}"></span></div>
+
+                        <!-- ✅ Hiện tên + địa chỉ nhà trọ trong phần chi tiết -->
+                        <div class="col-md-6">
+                            <b>Nhà trọ:</b>
+                            <span th:text="${room.hostel != null ? room.hostel.name : 'Chưa gán nhà trọ'}"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <b>Địa chỉ:</b>
+                            <span th:text="${room.hostel != null ? room.hostel.address : 'Chưa có'}"></span>
+                        </div>
+
+                        <div class="col-md-6"><b>Điện thoại:</b>
+                            <span th:text="${room.hostel != null && room.hostel.phone != null ? room.hostel.phone : '—'}"></span>
+                        </div>
+
                         <div class="col-md-6"><b>Ảnh:</b>
                             <span th:if="${room.imageUrl != null}" class="text-success">Có</span>
                             <span th:if="${room.imageUrl == null}" class="text-muted">Chưa có</span>
@@ -285,10 +305,15 @@
                         <div class="col-12 d-grid">
                             <button class="btn btn-primary btn-soft">Gửi yêu cầu</button>
                         </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú (tuỳ chọn)</label>
+                            <textarea class="form-control" name="note" rows="3"
+                                      placeholder="Ví dụ: muốn xem phòng chiều T7, cần chỗ để xe..."></textarea>
+                        </div>
                     </form>
 
                     <hr class="my-3">
-
                     <div class="small text-muted">
                         (Bước sau) Mình sẽ làm bảng <b>booking_requests</b> + trang Admin duyệt để lưu yêu cầu này.
                     </div>

@@ -63,8 +63,10 @@ public class NvtRoom {
         this.updatedAt = LocalDateTime.now();
     }
 
-    @Column(name = "hostel_id")
-    private Long hostelId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hostel_id")
+    private NvtHostel hostel;
+
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;

@@ -9,30 +9,31 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name="feedbacks")
-public class NvtFeedback {
+@Table(name = "booking_requests")
+public class NvtBookingRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="room_id")
-    private Long roomId; // có thể null
+    @Column(name="room_id", nullable = false)
+    private Long roomId;
 
-    @Column(name="tenant_id")
-    private Long tenantId; // có thể null
+    @Column(name="full_name", nullable = false, length = 100)
+    private String fullName;
 
-    @Column(nullable = false, length = 200)
-    private String title;
+    @Column(name="phone", nullable = false, length = 30)
+    private String phone;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+    @Column(columnDefinition = "TEXT")
+    private String note;
 
     @Enumerated(EnumType.STRING)
-    private FeedbackStatus status;
+    @Column(nullable = false, length = 30)
+    private Status status;
 
     @Column(name="admin_note", columnDefinition = "TEXT")
-    private String adminNote; // ghi chú nội bộ của admin
+    private String adminNote;
 
     @Column(name="created_at")
     private LocalDateTime createdAt;
@@ -40,7 +41,7 @@ public class NvtFeedback {
     @Column(name="updated_at")
     private LocalDateTime updatedAt;
 
-    public enum FeedbackStatus { NEW, IN_PROGRESS, DONE }
+    public enum Status { NEW, CONTACTED, APPROVED, REJECTED }
 
     @PrePersist
     public void prePersist() {
@@ -48,17 +49,16 @@ public class NvtFeedback {
         if (createdAt == null) createdAt = now;
         updatedAt = now;
 
-        if (status == null) status = FeedbackStatus.NEW;
-        if (title != null) title = title.trim();
-        if (content != null) content = content.trim();
+        if (status == null) status = Status.NEW;
+        if (fullName != null) fullName = fullName.trim();
+        if (phone != null) phone = phone.trim();
+        if (note != null) note = note.trim();
         if (adminNote != null) adminNote = adminNote.trim();
     }
 
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
-        if (title != null) title = title.trim();
-        if (content != null) content = content.trim();
         if (adminNote != null) adminNote = adminNote.trim();
     }
 }

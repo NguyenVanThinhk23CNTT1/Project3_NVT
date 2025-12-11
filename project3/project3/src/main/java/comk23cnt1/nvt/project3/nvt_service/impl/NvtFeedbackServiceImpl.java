@@ -22,8 +22,21 @@ public class NvtFeedbackServiceImpl implements NvtFeedbackService {
     }
 
     @Override
+    public List<NvtFeedback> findByStatus(NvtFeedback.FeedbackStatus status) {
+        if (status == null) return repo.findAll();
+        return repo.findByStatusOrderByIdDesc(status);
+    }
+
+    @Override
+    public long countByStatus(NvtFeedback.FeedbackStatus status) {
+        if (status == null) return repo.count();
+        return repo.countByStatus(status);
+    }
+
+    @Override
     public NvtFeedback findById(Long id) {
-        return repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phản ánh ID=" + id));
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phản ánh ID=" + id));
     }
 
     @Override
@@ -41,9 +54,10 @@ public class NvtFeedbackServiceImpl implements NvtFeedbackService {
     }
 
     @Override
-    public NvtFeedback updateStatus(Long id, NvtFeedback.FeedbackStatus status) {
+    public NvtFeedback updateStatus(Long id, NvtFeedback.FeedbackStatus status, String adminNote) {
         NvtFeedback f = findById(id);
         f.setStatus(status == null ? NvtFeedback.FeedbackStatus.NEW : status);
+        if (adminNote != null) f.setAdminNote(adminNote.trim());
         return repo.save(f);
     }
 

@@ -24,14 +24,21 @@ public class NvtUserFeedbackController {
 
     @GetMapping
     public String form(Model model,
+                       @RequestParam(value="roomId", required=false) Long roomId,
                        @RequestParam(value="msg", required=false) String msg,
                        @RequestParam(value="err", required=false) String err) {
+
         model.addAttribute("rooms", roomService.findAll());
-        model.addAttribute("newFeedback", new NvtFeedback());
+
+        NvtFeedback f = new NvtFeedback();
+        if (roomId != null) f.setRoomId(roomId); // ✅ auto chọn phòng
+        model.addAttribute("newFeedback", f);
+
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
         return "user/feedback";
     }
+
 
     @PostMapping("/send")
     public String send(@ModelAttribute("newFeedback") NvtFeedback f) {

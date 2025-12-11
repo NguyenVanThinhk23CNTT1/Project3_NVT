@@ -1,6 +1,8 @@
 package comk23cnt1.nvt.project3.nvt_service.impl;
 
+import comk23cnt1.nvt.project3.nvt_entity.NvtHostel;
 import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
+import comk23cnt1.nvt.project3.nvt_repository.NvtHostelRepository;
 import comk23cnt1.nvt.project3.nvt_repository.NvtRoomRepository;
 import comk23cnt1.nvt.project3.nvt_service.NvtRoomService;
 import org.springframework.stereotype.Service;
@@ -9,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.*;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,14 +19,17 @@ import java.util.UUID;
 public class NvtRoomServiceImpl implements NvtRoomService {
 
     private final NvtRoomRepository roomRepository;
+    private final NvtHostelRepository hostelRepository;
 
     private static final Path ROOM_UPLOAD_DIR = Paths.get("uploads", "rooms")
             .toAbsolutePath().normalize();
 
     private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp", "gif");
 
-    public NvtRoomServiceImpl(NvtRoomRepository roomRepository) {
+    public NvtRoomServiceImpl(NvtRoomRepository roomRepository,
+                              NvtHostelRepository hostelRepository) {
         this.roomRepository = roomRepository;
+        this.hostelRepository = hostelRepository;
     }
 
     @Override
@@ -41,6 +45,7 @@ public class NvtRoomServiceImpl implements NvtRoomService {
 
     @Override
     public NvtRoom create(NvtRoom room, MultipartFile imageFile) {
+        if (room == null) throw new IllegalArgumentException("Dữ liệu phòng không hợp lệ");
         normalize(room);
 
         if (room.getRoomCode() == null || room.getRoomCode().isBlank())
@@ -52,9 +57,14 @@ public class NvtRoomServiceImpl implements NvtRoomService {
         if (room.getRentPrice() == null || room.getRentPrice().compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Giá thuê phải > 0");
 
-        // multi-hostel: bắt buộc chọn nhà trọ
-        if (room.getHostelId() == null)
+        // ✅ bắt buộc chọn nhà trọ
+        Long hostelId = (room.getHostel() != null) ? room.getHostel().getId() : null;
+        if (hostelId == null)
             throw new IllegalArgumentException("Vui lòng chọn nhà trọ");
+
+        NvtHostel hostel = hostelRepository.findById(hostelId)
+                .orElseThrow(() -> new IllegalArgumentException("Nhà trọ không tồn tại: ID=" + hostelId));
+        room.setHostel(hostel);
 
         if (room.getStatus() == null) room.setStatus(NvtRoom.RoomStatus.EMPTY);
         if (room.getFloor() == null) room.setFloor(1);
@@ -63,12 +73,8 @@ public class NvtRoomServiceImpl implements NvtRoomService {
 
         // save hình (nếu có)
         if (imageFile != null && !imageFile.isEmpty()) {
-            String url = saveRoomImage(imageFile);
-            room.setImageUrl(url);
+            room.setImageUrl(saveRoomImage(imageFile));
         }
-
-        // nếu entity bạn có createdAt mà DB bắt not null thì tự set ở đây (nếu cần)
-        // room.setCreatedAt(LocalDateTime.now());
 
         return roomRepository.save(room);
     }
@@ -76,6 +82,7 @@ public class NvtRoomServiceImpl implements NvtRoomService {
     @Override
     public NvtRoom update(Long id, NvtRoom room, MultipartFile imageFile) {
         NvtRoom existing = findById(id);
+        if (room == null) throw new IllegalArgumentException("Dữ liệu phòng không hợp lệ");
         normalize(room);
 
         if (room.getRoomCode() == null || room.getRoomCode().isBlank())
@@ -87,8 +94,14 @@ public class NvtRoomServiceImpl implements NvtRoomService {
         if (room.getRentPrice() == null || room.getRentPrice().compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Giá thuê phải > 0");
 
-        if (room.getHostelId() == null)
+        // ✅ bắt buộc chọn nhà trọ
+        Long hostelId = (room.getHostel() != null) ? room.getHostel().getId() : null;
+        if (hostelId == null)
             throw new IllegalArgumentException("Vui lòng chọn nhà trọ");
+
+        NvtHostel hostel = hostelRepository.findById(hostelId)
+                .orElseThrow(() -> new IllegalArgumentException("Nhà trọ không tồn tại: ID=" + hostelId));
+        existing.setHostel(hostel);
 
         existing.setRoomCode(room.getRoomCode());
         existing.setRoomName(room.getRoomName());
@@ -100,17 +113,9 @@ public class NvtRoomServiceImpl implements NvtRoomService {
         existing.setStatus(room.getStatus() == null ? NvtRoom.RoomStatus.EMPTY : room.getStatus());
         existing.setDescription(room.getDescription());
 
-        // multi-hostel
-        existing.setHostelId(room.getHostelId());
-
-        // update hình (nếu có file mới)
         if (imageFile != null && !imageFile.isEmpty()) {
-            String url = saveRoomImage(imageFile);
-            existing.setImageUrl(url);
+            existing.setImageUrl(saveRoomImage(imageFile));
         }
-
-        // nếu entity bạn có updatedAt mà DB bắt not null thì tự set ở đây (nếu cần)
-        // existing.setUpdatedAt(LocalDateTime.now());
 
         return roomRepository.save(existing);
     }
@@ -125,7 +130,10 @@ public class NvtRoomServiceImpl implements NvtRoomService {
 
     private void normalize(NvtRoom room) {
         if (room.getRoomCode() != null) room.setRoomCode(room.getRoomCode().trim());
-        if (room.getRoomName() != null) room.setRoomName(room.getRoomName().trim());
+        if (room.getRoomName() != null) {
+            String n = room.getRoomName().trim();
+            room.setRoomName(n.isBlank() ? null : n);
+        }
         if (room.getDescription() != null) {
             String d = room.getDescription().trim();
             room.setDescription(d.isBlank() ? null : d);
@@ -155,7 +163,6 @@ public class NvtRoomServiceImpl implements NvtRoomService {
                 Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // URL public (nhờ NvtWebConfig mapping /uploads/**)
             return "/uploads/rooms/" + safeName;
 
         } catch (IOException e) {

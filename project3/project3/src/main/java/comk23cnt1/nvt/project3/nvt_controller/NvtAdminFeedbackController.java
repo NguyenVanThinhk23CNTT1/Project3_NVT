@@ -2,49 +2,55 @@ package comk23cnt1.nvt.project3.nvt_controller;
 
 import comk23cnt1.nvt.project3.nvt_entity.NvtFeedback;
 import comk23cnt1.nvt.project3.nvt_service.NvtFeedbackService;
-import comk23cnt1.nvt.project3.nvt_service.NvtRoomService;
-import comk23cnt1.nvt.project3.nvt_service.NvtTenantService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/feedbacks")
 public class NvtAdminFeedbackController {
 
     private final NvtFeedbackService feedbackService;
-    private final NvtRoomService roomService;
-    private final NvtTenantService tenantService;
 
-    public NvtAdminFeedbackController(NvtFeedbackService feedbackService,
-                                      NvtRoomService roomService,
-                                      NvtTenantService tenantService) {
+    public NvtAdminFeedbackController(NvtFeedbackService feedbackService) {
         this.feedbackService = feedbackService;
-        this.roomService = roomService;
-        this.tenantService = tenantService;
     }
 
     @GetMapping
     public String list(Model model,
+                       @RequestParam(value="status", required=false) String status,
                        @RequestParam(value="msg", required=false) String msg,
                        @RequestParam(value="err", required=false) String err) {
-        model.addAttribute("feedbacks", feedbackService.findAll());
+
+        NvtFeedback.FeedbackStatus st = null;
+        if (status != null && !status.isBlank()) {
+            st = NvtFeedback.FeedbackStatus.valueOf(status);
+        }
+
+        List<NvtFeedback> feedbacks = feedbackService.findByStatus(st);
+
+        model.addAttribute("feedbacks", feedbacks);
         model.addAttribute("statuses", NvtFeedback.FeedbackStatus.values());
-        model.addAttribute("rooms", roomService.findAll());
-        model.addAttribute("tenants", tenantService.findAll());
+        model.addAttribute("status", status);
+        model.addAttribute("newCount", feedbackService.countByStatus(NvtFeedback.FeedbackStatus.NEW));
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
+
         return "admin/feedbacks";
     }
 
     @PostMapping("/status/{id}")
-    public String updateStatus(@PathVariable Long id, @RequestParam NvtFeedback.FeedbackStatus status) {
+    public String updateStatus(@PathVariable Long id,
+                               @RequestParam("status") String status,
+                               @RequestParam(value="adminNote", required=false) String adminNote) {
         try {
-            feedbackService.updateStatus(id, status);
-            return "redirect:/admin/feedbacks?msg=" + enc("Cập nhật trạng thái thành công");
+            NvtFeedback.FeedbackStatus st = NvtFeedback.FeedbackStatus.valueOf(status);
+            feedbackService.updateStatus(id, st, adminNote);
+            return "redirect:/admin/feedbacks?msg=" + enc("Đã cập nhật phản ánh #" + id);
         } catch (Exception e) {
             return "redirect:/admin/feedbacks?err=" + enc(e.getMessage());
         }
@@ -54,7 +60,7 @@ public class NvtAdminFeedbackController {
     public String delete(@PathVariable Long id) {
         try {
             feedbackService.delete(id);
-            return "redirect:/admin/feedbacks?msg=" + enc("Xóa thành công");
+            return "redirect:/admin/feedbacks?msg=" + enc("Đã xóa phản ánh #" + id);
         } catch (Exception e) {
             return "redirect:/admin/feedbacks?err=" + enc(e.getMessage());
         }

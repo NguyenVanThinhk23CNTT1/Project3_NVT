@@ -1,8 +1,10 @@
 package comk23cnt1.nvt.project3.nvt_controller;
 
 import comk23cnt1.nvt.project3.nvt_entity.NvtBill;
+import comk23cnt1.nvt.project3.nvt_entity.NvtBookingRequest;
 import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
 import comk23cnt1.nvt.project3.nvt_repository.NvtBillRepository;
+import comk23cnt1.nvt.project3.nvt_repository.NvtBookingRequestRepository;
 import comk23cnt1.nvt.project3.nvt_repository.NvtRoomRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,10 +19,14 @@ public class NvtUserPageController {
 
     private final NvtRoomRepository roomRepo;
     private final NvtBillRepository billRepo;
+    private final NvtBookingRequestRepository bookingRepo;
 
-    public NvtUserPageController(NvtRoomRepository roomRepo, NvtBillRepository billRepo) {
+    public NvtUserPageController(NvtRoomRepository roomRepo,
+                                 NvtBillRepository billRepo,
+                                 NvtBookingRequestRepository bookingRepo) {
         this.roomRepo = roomRepo;
         this.billRepo = billRepo;
+        this.bookingRepo = bookingRepo;
     }
 
     // Trang chủ: list phòng trống
@@ -40,27 +46,48 @@ public class NvtUserPageController {
     public String roomDetail(@PathVariable Long id, Model model,
                              @RequestParam(value="msg", required=false) String msg,
                              @RequestParam(value="err", required=false) String err) {
-        NvtRoom room = roomRepo.findById(id)
+        NvtRoom room = roomRepo.findByIdWithHostel(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+
         model.addAttribute("room", room);
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
         return "user/room-detail";
     }
 
-    // Đặt thuê (tạm thời: chỉ hiển thị thông báo, sau login sẽ tạo booking/request)
+    // ✅ Lưu booking request vào DB để admin duyệt
     @PostMapping("/rooms/{id}/book")
     public String book(@PathVariable Long id,
                        @RequestParam String fullName,
-                       @RequestParam String phone) {
+                       @RequestParam String phone,
+                       @RequestParam(value="note", required=false) String note) {
         try {
             if (fullName == null || fullName.trim().isBlank())
                 return "redirect:/rooms/" + id + "?err=" + enc("Họ tên không được rỗng");
             if (phone == null || phone.trim().isBlank())
                 return "redirect:/rooms/" + id + "?err=" + enc("SĐT không được rỗng");
 
-            // TODO (sau): lưu vào bảng booking_requests
-            return "redirect:/rooms/" + id + "?msg=" + enc("Đã gửi yêu cầu đặt thuê. Chủ trọ sẽ liên hệ.");
+            // check room tồn tại
+            NvtRoom room = roomRepo.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
+
+            // chỉ cho gửi khi phòng đang EMPTY
+            if (room.getStatus() != null && room.getStatus() != NvtRoom.RoomStatus.EMPTY) {
+                return "redirect:/rooms/" + id + "?err=" + enc("Phòng này hiện không còn trống");
+            }
+
+            NvtBookingRequest req = new NvtBookingRequest();
+            req.setRoomId(id);
+            req.setFullName(fullName.trim());
+            req.setPhone(phone.trim());
+            req.setNote(note == null || note.trim().isBlank() ? null : note.trim());
+
+            // set status đúng enum (hoặc bỏ dòng này nếu entity @PrePersist set NEW)
+            req.setStatus(NvtBookingRequest.Status.NEW);
+
+            bookingRepo.save(req);
+
+            return "redirect:/rooms/" + id + "?msg=" + enc("Đã gửi yêu cầu thuê. Admin sẽ duyệt và liên hệ sớm.");
         } catch (Exception e) {
             return "redirect:/rooms/" + id + "?err=" + enc(e.getMessage());
         }

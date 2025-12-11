@@ -3,5 +3,13 @@ package comk23cnt1.nvt.project3.nvt_repository;
 import comk23cnt1.nvt.project3.nvt_entity.NvtFeedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface NvtFeedbackRepository extends JpaRepository<NvtFeedback, Long> {
+
+    List<NvtFeedback> findAllByOrderByIdDesc();
+
+    List<NvtFeedback> findByStatusOrderByIdDesc(NvtFeedback.FeedbackStatus status);
+
+    long countByStatus(NvtFeedback.FeedbackStatus status);
 }
