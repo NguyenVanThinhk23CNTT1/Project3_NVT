@@ -114,7 +114,7 @@
                     <tbody>
                     <tr th:each="m : ${meters}">
                         <td th:text="${m.id}"></td>
-                        <td th:text="${m.roomId}"></td>
+                        <td th:text="${roomMap[m.roomId]}"></td>
                         <td th:text="${m.billMonth}"></td>
                         <td th:text="${m.billYear}"></td>
                         <td th:text="${m.electricOld + ' → ' + m.electricNew}"></td>

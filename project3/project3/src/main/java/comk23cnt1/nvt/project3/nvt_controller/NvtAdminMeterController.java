@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/meters")
@@ -28,7 +31,23 @@ public class NvtAdminMeterController {
                        @RequestParam(value="msg", required=false) String msg,
                        @RequestParam(value="err", required=false) String err) {
 
-        model.addAttribute("rooms", roomService.findAll());
+        var rooms = roomService.findAll();
+
+        // Tạo map: roomId -> "P101 - Phòng 101 (Hostel A)"
+        Map<Long, String> roomMap = rooms.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getId(),
+                        r -> {
+                            String base = r.getRoomCode() + " - " + r.getRoomName();
+                            if (r.getHostel() != null) base += " (" + r.getHostel().getName() + ")";
+                            return base;
+                        },
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+
+        model.addAttribute("rooms", rooms);
+        model.addAttribute("roomMap", roomMap);
         model.addAttribute("newMeter", new NvtMeterReading());
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
@@ -39,6 +58,7 @@ public class NvtAdminMeterController {
 
         return "admin/meters";
     }
+
 
     @PostMapping("/create")
     public String create(@ModelAttribute("newMeter") NvtMeterReading r) {

@@ -79,8 +79,8 @@
                     <tbody>
                     <tr th:each="b : ${bills}">
                         <td th:text="${b.id}"></td>
-                        <td th:text="${b.contractId}"></td>
-                        <td th:text="${b.roomId}"></td>
+                        <td th:text="${contractMap[b.contractId]}"></td>
+                        <td th:text="${roomMap[b.roomId]}"></td>
                         <td th:text="${b.billMonth + '/' + b.billYear}"></td>
                         <td th:text="${b.totalAmount}"></td>
                         <td>
