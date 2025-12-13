@@ -20,4 +20,6 @@ public interface NvtRoomRepository extends JpaRepository<NvtRoom, Long> {
     @Query("select r from NvtRoom r left join fetch r.hostel where r.id = :id")
     Optional<NvtRoom> findByIdWithHostel(@Param("id") Long id);
 
+    long countByStatus(NvtRoom.RoomStatus status);
+
 }

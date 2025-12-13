@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface NvtPaymentRepository extends JpaRepository<NvtPayment, Long> {
     List<NvtPayment> findByBillIdOrderByPaidAtDesc(Long billId);
+
+    // ✅ thêm
+    List<NvtPayment> findByMethodAndStatusOrderByPaidAtDesc(NvtPayment.Method method, NvtPayment.PayStatus status);
 }

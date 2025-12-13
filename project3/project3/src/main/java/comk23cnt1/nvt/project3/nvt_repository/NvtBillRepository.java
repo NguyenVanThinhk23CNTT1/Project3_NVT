@@ -12,4 +12,7 @@ public interface NvtBillRepository extends JpaRepository<NvtBill, Long> {
     List<NvtBill> findByContractIdOrderByBillYearDescBillMonthDesc(Long contractId);
 
     List<NvtBill> findByRoomIdOrderByBillYearDescBillMonthDesc(Long roomId);
+
+    // ✅ thêm để dashboard đếm nhanh
+    long countByStatus(NvtBill.BillStatus status);
 }

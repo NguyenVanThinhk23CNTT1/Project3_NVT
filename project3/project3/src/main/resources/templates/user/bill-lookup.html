@@ -116,6 +116,8 @@
 
             <div th:if="${roomId == null}" class="text-muted">Chưa chọn phòng.</div>
 
+            <!-- ... giữ nguyên phần trên ... -->
+
             <div class="table-responsive" th:if="${roomId != null}">
                 <table class="table table-hover align-middle">
                     <thead>
@@ -126,6 +128,7 @@
                         <th>Tiền nước</th>
                         <th>Tổng</th>
                         <th>Status</th>
+                        <th class="text-end">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -135,14 +138,24 @@
                         <td th:text="${b.electricAmount}"></td>
                         <td th:text="${b.waterAmount}"></td>
                         <td th:text="${b.totalAmount}"></td>
-                        <td th:text="${b.status}"></td>
+                        <td>
+                            <span class="badge bg-warning text-dark" th:if="${b.status.name()=='UNPAID'}">UNPAID</span>
+                            <span class="badge bg-success" th:if="${b.status.name()=='PAID'}">PAID</span>
+                            <span class="badge bg-danger" th:if="${b.status.name()=='OVERDUE'}">OVERDUE</span>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{'/bills/' + ${b.id}}">Chi tiết / Thanh toán</a>
+                        </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(bills)}">
-                        <td colspan="6" class="text-center text-muted">Chưa có hóa đơn cho phòng này</td>
+                        <td colspan="7" class="text-center text-muted">Chưa có hóa đơn cho phòng này</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- ... -->
 
         </div>
     </div>

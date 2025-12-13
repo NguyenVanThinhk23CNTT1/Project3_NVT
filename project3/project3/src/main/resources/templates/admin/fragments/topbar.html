@@ -2,32 +2,33 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="topbar(title)" class="d-flex justify-content-between align-items-center mb-3">
+<div th:fragment="topbar(title)"
+     class="d-flex justify-content-between align-items-center mb-3">
+
     <div>
-        <h4 class="mb-0" th:text="${title}">Admin</h4>
-        <div class="text-muted small">NVT - Quản lý nhà trọ</div>
+        <h3 class="fw-bold mb-0">Trang Chủ</h3>
     </div>
 
     <div class="d-flex align-items-center gap-2">
-        <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin}">Dashboard</a>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin}">
+            Dashboard
+        </a>
 
         <span class="text-muted small"
               th:if="${#authentication != null and #authentication.authenticated}">
-      Xin chào, <b th:text="${#authentication.name}">admin</b>
-    </span>
-
-        <a class="btn btn-outline-primary btn-sm" th:href="@{/admin/booking-requests}">Booking Requests</a>
-
-        <a class="btn btn-outline-primary btn-sm" th:href="@{/admin/feedbacks}">Feedbacks</a>
-
+            Xin chào, <b th:text="${#authentication.name}">admin</b>
+        </span>
 
         <form th:if="${#authentication != null and #authentication.authenticated}"
               method="post" th:action="@{/admin/logout}" class="m-0">
-            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                Logout
+            </button>
         </form>
 
         <a th:if="${#authentication == null or !#authentication.authenticated}"
-           class="btn btn-outline-primary btn-sm" th:href="@{/admin/login}">
+           class="btn btn-outline-primary btn-sm"
+           th:href="@{/admin/login}">
             Login
         </a>
     </div>
