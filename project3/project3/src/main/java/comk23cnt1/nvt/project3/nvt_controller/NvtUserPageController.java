@@ -128,6 +128,88 @@ public class NvtUserPageController {
     }
 
     // =========================
+//  MOMO: PENDING
+// =========================
+    @PostMapping("/bills/{billId}/pay-momo")
+    public String payMomo(@PathVariable Long billId,
+                          @RequestParam String email,
+                          @RequestParam String transactionCode) {
+        try {
+            if (email == null || email.trim().isBlank()) {
+                return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
+            }
+            if (transactionCode == null || transactionCode.trim().isBlank()) {
+                return "redirect:/bills/" + billId + "?err=" + enc("Mã giao dịch MoMo không được rỗng");
+            }
+
+            NvtBill bill = billingService.findBill(billId);
+            if (bill.getStatus() == NvtBill.BillStatus.PAID) {
+                return "redirect:/bills/" + billId + "?msg=" + enc("Hóa đơn đã thanh toán trước đó");
+            }
+
+            BigDecimal remain = calcRemain(billId, bill.getTotalAmount());
+            if (remain.compareTo(BigDecimal.ZERO) <= 0) {
+                return "redirect:/bills/" + billId + "?msg=" + enc("Hóa đơn đã đủ tiền");
+            }
+
+            NvtPayment p = new NvtPayment();
+            p.setBillId(billId);
+            p.setAmount(remain);
+            p.setMethod(NvtPayment.Method.MOMO);
+            p.setStatus(NvtPayment.PayStatus.PENDING);
+            p.setPayerEmail(email.trim());
+            p.setTransactionCode(transactionCode.trim());
+
+            paymentRepo.save(p);
+
+            return "redirect:/bills/" + billId + "?msg=" + enc("Đã gửi yêu cầu MoMo. Vui lòng chờ Admin xác nhận.");
+        } catch (Exception e) {
+            return "redirect:/bills/" + billId + "?err=" + enc(e.getMessage());
+        }
+    }
+
+    // =========================
+//  ZALOPAY: PENDING
+// =========================
+    @PostMapping("/bills/{billId}/pay-zalopay")
+    public String payZaloPay(@PathVariable Long billId,
+                             @RequestParam String email,
+                             @RequestParam String transactionCode) {
+        try {
+            if (email == null || email.trim().isBlank()) {
+                return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
+            }
+            if (transactionCode == null || transactionCode.trim().isBlank()) {
+                return "redirect:/bills/" + billId + "?err=" + enc("Mã giao dịch ZaloPay không được rỗng");
+            }
+
+            NvtBill bill = billingService.findBill(billId);
+            if (bill.getStatus() == NvtBill.BillStatus.PAID) {
+                return "redirect:/bills/" + billId + "?msg=" + enc("Hóa đơn đã thanh toán trước đó");
+            }
+
+            BigDecimal remain = calcRemain(billId, bill.getTotalAmount());
+            if (remain.compareTo(BigDecimal.ZERO) <= 0) {
+                return "redirect:/bills/" + billId + "?msg=" + enc("Hóa đơn đã đủ tiền");
+            }
+
+            NvtPayment p = new NvtPayment();
+            p.setBillId(billId);
+            p.setAmount(remain);
+            p.setMethod(NvtPayment.Method.ZALOPAY);
+            p.setStatus(NvtPayment.PayStatus.PENDING);
+            p.setPayerEmail(email.trim());
+            p.setTransactionCode(transactionCode.trim());
+
+            paymentRepo.save(p);
+
+            return "redirect:/bills/" + billId + "?msg=" + enc("Đã gửi yêu cầu ZaloPay. Vui lòng chờ Admin xác nhận.");
+        } catch (Exception e) {
+            return "redirect:/bills/" + billId + "?err=" + enc(e.getMessage());
+        }
+    }
+
+    // =========================
     //  TIỀN MẶT CHUẨN: PENDING
     // =========================
     @PostMapping("/bills/{billId}/pay-cash")

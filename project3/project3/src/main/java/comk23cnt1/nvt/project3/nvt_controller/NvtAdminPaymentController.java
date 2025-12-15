@@ -32,7 +32,7 @@ public class NvtAdminPaymentController {
         this.mailService = mailService;
     }
 
-    // ✅ CASH + BANK chung 1 trang
+    // ✅ Trang duyệt chung CASH + BANK + MOMO + ZALOPAY
     @GetMapping("/cash-payments")
     public String pendingPayments(Model model,
                                   @RequestParam(required = false) String msg,
@@ -50,32 +50,48 @@ public class NvtAdminPaymentController {
                         NvtPayment.PayStatus.PENDING
                 );
 
+        List<NvtPayment> pendingMomo =
+                paymentRepo.findByMethodAndStatusOrderByPaidAtDesc(
+                        NvtPayment.Method.MOMO,
+                        NvtPayment.PayStatus.PENDING
+                );
+
+        List<NvtPayment> pendingZaloPay =
+                paymentRepo.findByMethodAndStatusOrderByPaidAtDesc(
+                        NvtPayment.Method.ZALOPAY,
+                        NvtPayment.PayStatus.PENDING
+                );
+
         model.addAttribute("pendingCash", pendingCash);
         model.addAttribute("pendingBank", pendingBank);
+        model.addAttribute("pendingMomo", pendingMomo);
+        model.addAttribute("pendingZaloPay", pendingZaloPay);
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
+
         return "admin/cash-payments";
     }
 
-    // ✅ DUYỆT (CASH hoặc BANK đều vào đây)
+    // ✅ DUYỆT (CASH/BANK/MOMO/ZALOPAY đều dùng chung) -> SUCCESS + cập nhật bill + gửi mail
     @PostMapping("/cash-payments/{paymentId}/confirm")
     public String confirm(@PathVariable Long paymentId) {
         try {
             NvtPayment p = paymentRepo.findById(paymentId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy payment"));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy payment ID=" + paymentId));
 
             if (p.getStatus() != NvtPayment.PayStatus.PENDING)
                 throw new IllegalArgumentException("Payment không ở trạng thái PENDING");
 
+            // confirm
             p.setStatus(NvtPayment.PayStatus.SUCCESS);
             p.setPaidAt(LocalDateTime.now());
             paymentRepo.save(p);
 
+            // cập nhật bill nếu đủ tiền (tính theo SUCCESS)
             NvtBill bill = billRepo.findById(p.getBillId())
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bill"));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bill ID=" + p.getBillId()));
 
-            BigDecimal sumPaid = paymentRepo.findByBillIdOrderByPaidAtDesc(bill.getId())
-                    .stream()
+            BigDecimal sumPaid = paymentRepo.findByBillIdOrderByPaidAtDesc(bill.getId()).stream()
                     .filter(x -> x.getStatus() == NvtPayment.PayStatus.SUCCESS)
                     .map(NvtPayment::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -85,8 +101,8 @@ public class NvtAdminPaymentController {
                 billRepo.save(bill);
             }
 
-            // ✅ GỬI MAIL SAU KHI ADMIN DUYỆT
-            if (p.getPayerEmail() != null) {
+            // gửi mail sau khi admin confirm
+            if (p.getPayerEmail() != null && !p.getPayerEmail().isBlank()) {
                 mailService.sendPaymentSuccessEmail(
                         p.getPayerEmail(),
                         "Xác nhận thanh toán hóa đơn",
@@ -101,13 +117,25 @@ public class NvtAdminPaymentController {
         }
     }
 
+    // ✅ TỪ CHỐI (nhận reason từ form)
     @PostMapping("/cash-payments/{paymentId}/reject")
-    public String reject(@PathVariable Long paymentId) {
+    public String reject(@PathVariable Long paymentId,
+                         @RequestParam(value = "reason", required = false) String reason) {
         try {
             NvtPayment p = paymentRepo.findById(paymentId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy payment"));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy payment ID=" + paymentId));
+
+            if (p.getStatus() != NvtPayment.PayStatus.PENDING)
+                throw new IllegalArgumentException("Chỉ từ chối khi PENDING");
 
             p.setStatus(NvtPayment.PayStatus.FAILED);
+
+            // gắn lý do vào transactionCode cho dễ xem
+            if (reason != null && !reason.trim().isBlank()) {
+                String old = (p.getTransactionCode() == null ? "" : p.getTransactionCode());
+                p.setTransactionCode(old + " | REJECT: " + reason.trim());
+            }
+
             paymentRepo.save(p);
 
             return "redirect:/admin/cash-payments?msg=" + enc("Đã từ chối yêu cầu");
