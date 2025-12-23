@@ -16,6 +16,7 @@
             --muted: #64748b;
             --card: #ffffff;
             --radius: 18px;
+            --side-top-gap: 16px;
         }
 
         body{ color: var(--ink); }
@@ -211,6 +212,95 @@
         .crumb a{ color: var(--muted); text-decoration:none; }
         .crumb a:hover{ text-decoration:underline; }
 
+        /* ===== Sticky sidebars: FIX THỤT XUỐNG ===== */
+        .sticky-side{
+            position: sticky;
+            top: calc(var(--header-h, 0px) + var(--side-top-gap));
+        }
+        body.header-hidden .sticky-side{
+            top: var(--side-top-gap);
+        }
+
+        /* ===== QUẢNG CÁO: ẢNH DÀI + CHỮ NẰM TRÊN ẢNH ===== */
+        .ad-banner{
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(15,23,42,.10);
+            box-shadow: 0 .9rem 2rem rgba(2,6,23,.08);
+            background: #fff;
+            min-height: 1280px; /* ảnh dài xuống */
+        }
+
+        .ad-banner img{
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            object-fit: cover;
+            display:block;
+            transform: scale(1.02);
+        }
+
+        .ad-overlay{
+            position:absolute;
+            inset:0;
+            background:
+                linear-gradient(to bottom, rgba(2,6,23,.65) 0%, rgba(2,6,23,.15) 45%, rgba(2,6,23,.70) 100%);
+        }
+
+        .ad-content{
+            position:absolute;
+            inset:0;
+            display:flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+            color:#fff;
+        }
+
+        .ad-top{
+            display:flex;
+            justify-content: space-between;
+            align-items:flex-start;
+            gap:10px;
+        }
+
+        .ad-badge{
+            background: rgba(255,255,255,.16);
+            border: 1px solid rgba(255,255,255,.22);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .82rem;
+            backdrop-filter: blur(6px);
+            white-space: nowrap;
+        }
+
+        .ad-title{
+            font-weight: 950;
+            letter-spacing: .2px;
+            font-size: 1.15rem;
+            line-height: 1.2;
+            text-shadow: 0 8px 20px rgba(0,0,0,.35);
+        }
+
+        .ad-sub{
+            margin-top: 6px;
+            font-size: .92rem;
+            color: rgba(255,255,255,.92);
+            text-shadow: 0 8px 18px rgba(0,0,0,.35);
+        }
+
+        .ad-bottom{
+            background: rgba(15,23,42,.35);
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 16px;
+            padding: 12px;
+            backdrop-filter: blur(8px);
+        }
+        .ad-bottom b{ color:#fff; }
+        .ad-small{ font-size: .9rem; color: rgba(255,255,255,.92); }
+
         /* Chat widget */
         .chat-panel{
             position: fixed;
@@ -310,7 +400,6 @@
         .fab-hotline{ background:#ef4444; color:#fff; }
         .fab-zalo{ background:#22c55e; color:#fff; }
 
-        /* đóng: ẩn 2 nút phụ */
         .fab-stack.is-collapsed .fab-secondary{
             opacity: 0;
             transform: translateY(10px);
@@ -326,6 +415,7 @@
         }
     </style>
 </head>
+
 <body class="bg-light">
 
 <!-- HEADER -->
@@ -426,61 +516,97 @@
         </div>
     </div>
 
-    <div class="row g-3" id="roomGrid">
-        <div class="col-md-4 room-item" th:each="r : ${rooms}"
-             th:attr="data-code=${r.roomCode},
-                      data-name=${r.roomName},
-                      data-desc=${r.description},
-                      data-price=${r.rentPrice},
-                      data-area=${r.area}">
-            <div class="card border-0 shadow-sm room-card h-100">
-                <div class="room-cover">
-                    <img th:if="${r.imageUrl != null}" th:src="${r.imageUrl}" alt="Ảnh phòng">
-                    <img th:if="${r.imageUrl == null}"
-                         src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=60"
-                         alt="Ảnh phòng">
-                    <div class="cover-shade"></div>
-                    <span class="badge bg-success badge-top">EMPTY</span>
-                    <div class="room-title">
-                        <div class="code" th:text="${r.roomCode != null ? r.roomCode : ('#' + r.id)}"></div>
-                        <div class="name" th:text="${r.roomName != null ? r.roomName : 'Phòng trọ'}"></div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="meta mb-2">
-                        <div>🏢 <b th:text="${'Tầng ' + (r.floor != null ? r.floor : 1)}"></b></div>
-                        <div>👥 <b th:text="${(r.maxPeople != null ? r.maxPeople : 1) + ' người'}"></b></div>
-                        <div th:if="${r.area != null}">📐 <b th:text="${r.area + ' m²'}"></b></div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small">Giá</div>
-                            <div class="price">
-                                <span th:text="${#numbers.formatDecimal(r.rentPrice, 0, 'COMMA', 0, 'POINT')}"></span>
-                                <span class="text-muted" style="font-size:.9rem">đ</span>
+    <div class="row g-3 align-items-start">
+        <!-- MAIN -->
+        <div class="col-lg-9">
+            <div class="row g-3" id="roomGrid">
+                <div class="col-md-4 room-item" th:each="r : ${rooms}"
+                     th:attr="data-code=${r.roomCode},
+                              data-name=${r.roomName},
+                              data-desc=${r.description},
+                              data-price=${r.rentPrice},
+                              data-area=${r.area}">
+                    <div class="card border-0 shadow-sm room-card h-100">
+                        <div class="room-cover">
+                            <img th:if="${r.imageUrl != null}" th:src="${r.imageUrl}" alt="Ảnh phòng">
+                            <img th:if="${r.imageUrl == null}"
+                                 src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=1200&q=60"
+                                 alt="Ảnh phòng">
+                            <div class="cover-shade"></div>
+                            <span class="badge bg-success badge-top">EMPTY</span>
+                            <div class="room-title">
+                                <div class="code" th:text="${r.roomCode != null ? r.roomCode : ('#' + r.id)}"></div>
+                                <div class="name" th:text="${r.roomName != null ? r.roomName : 'Phòng trọ'}"></div>
                             </div>
                         </div>
-                        <a class="btn btn-primary btn-soft btn-sm" th:href="@{'/rooms/' + ${r.id}}">Xem phòng</a>
-                    </div>
 
-                    <div class="small text-muted mt-2" th:if="${r.description != null}">
-                        <span th:text="${#strings.abbreviate(r.description, 90)}"></span>
+                        <div class="card-body">
+                            <div class="meta mb-2">
+                                <div>🏢 <b th:text="${'Tầng ' + (r.floor != null ? r.floor : 1)}"></b></div>
+                                <div>👥 <b th:text="${(r.maxPeople != null ? r.maxPeople : 1) + ' người'}"></b></div>
+                                <div th:if="${r.area != null}">📐 <b th:text="${r.area + ' m²'}"></b></div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small">Giá</div>
+                                    <div class="price">
+                                        <span th:text="${#numbers.formatDecimal(r.rentPrice, 0, 'COMMA', 0, 'POINT')}"></span>
+                                        <span class="text-muted" style="font-size:.9rem">đ</span>
+                                    </div>
+                                </div>
+                                <a class="btn btn-primary btn-soft btn-sm" th:href="@{'/rooms/' + ${r.id}}">Xem phòng</a>
+                            </div>
+
+                            <div class="small text-muted mt-2" th:if="${r.description != null}">
+                                <span th:text="${#strings.abbreviate(r.description, 90)}"></span>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div class="col-12" id="emptyState" style="display:none;">
+                    <div class="alert alert-info mb-0">
+                        Không tìm thấy phòng phù hợp. Bạn thử đổi bộ lọc nhé.
+                    </div>
+                </div>
+
+                <div class="col-12" th:if="${#lists.isEmpty(rooms)}">
+                    <div class="alert alert-info mb-0">Hiện chưa có phòng trống.</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12" id="emptyState" style="display:none;">
-            <div class="alert alert-info mb-0">
-                Không tìm thấy phòng phù hợp. Bạn thử đổi bộ lọc nhé.
-            </div>
-        </div>
+        <!-- RIGHT SIDEBAR: QUẢNG CÁO DÀI + CHỮ TRÊN ẢNH -->
+        <aside class="col-lg-3 d-none d-lg-block">
+            <div class="sticky-side">
+                <div class="ad-banner">
+                    <img th:src="@{/quangcao.jpg }" alt="Quảng cáo Phòng Tốt">
+                    <div class="ad-overlay"></div>
 
-        <div class="col-12" th:if="${#lists.isEmpty(rooms)}">
-            <div class="alert alert-info mb-0">Hiện chưa có phòng trống.</div>
-        </div>
+                    <div class="ad-content">
+                        <div class="ad-top">
+                            <div>
+                                <div class="ad-title">Phòng Tốt</div>
+                                <div class="ad-sub">Cho thuê trọ sinh viên • gia đình • giá rẻ</div>
+                            </div>
+                            <div class="ad-badge">Quảng cáo</div>
+                        </div>
+
+                        <div class="ad-bottom">
+                            <div class="ad-small">
+                                ✅ Gần trường, an ninh<br>
+                                ✅ Phòng sạch, vào ở ngay<br>
+                                📞 Hotline: <b>0343 841 111</b><br>
+                                💬 Zalo: <b>0343 841 111</b><br>
+                                ⏰ 08:00–22:00
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </aside>
     </div>
 </div>
 
@@ -504,10 +630,8 @@
     </div>
 </div>
 
-<!-- Floating Support Buttons (tròn + bung ra) -->
+<!-- Floating Support Buttons -->
 <div class="fab-stack is-collapsed" id="fabStack">
-
-    <!-- Zalo -->
     <div class="fab-item fab-secondary">
         <div class="fab-label">Zalo hỗ trợ</div>
         <a class="fab-btn fab-zalo"
@@ -516,7 +640,6 @@
            title="Zalo hỗ trợ">💬</a>
     </div>
 
-    <!-- Hotline -->
     <div class="fab-item fab-secondary">
         <div class="fab-label">Hotline 0343841111</div>
         <a class="fab-btn fab-hotline"
@@ -524,14 +647,13 @@
            title="Gọi hotline">☎</a>
     </div>
 
-    <!-- Robot: bấm để mở/đóng menu -->
     <div class="fab-item">
         <button class="fab-btn fab-robot" type="button" id="fabToggle" title="Robot hỗ trợ">🤖</button>
     </div>
 </div>
 
 <script>
-    // ====== Front-end filter (không cần backend) ======
+    // ====== Front-end filter ======
     function toNum(v){
         if (v == null) return NaN;
         const s = String(v).replaceAll(',', '').trim();
@@ -578,7 +700,8 @@
         });
 
         document.getElementById('countShown').innerText = String(shown);
-        document.getElementById('emptyState').style.display = shown === 0 ? '' : 'none';
+        const es = document.getElementById('emptyState');
+        if (es) es.style.display = shown === 0 ? '' : 'none';
     }
 
     document.getElementById('btnSearch').addEventListener('click', applyFilter);
@@ -653,7 +776,6 @@
             if (e.key === 'Enter') onSend();
         });
 
-        // expose open/close for fab
         window.__openChat = open;
         window.__closeChat = close;
     })();
@@ -678,8 +800,16 @@
 
         const onScroll = () => {
             const y = window.scrollY;
-            if (y > lastY && y > 120) header.classList.add('is-hidden');
-            if (y < lastY) header.classList.remove('is-hidden');
+
+            if (y > lastY && y > 120) {
+                header.classList.add('is-hidden');
+                document.body.classList.add('header-hidden');
+            }
+            if (y < lastY) {
+                header.classList.remove('is-hidden');
+                document.body.classList.remove('header-hidden');
+            }
+
             lastY = y;
             ticking = false;
         };
@@ -692,22 +822,19 @@
         }, { passive: true });
     })();
 
-    // ====== Toggle tròn: bấm robot bung ra Zalo/Hotline + mở chat ======
+    // ====== Toggle FAB ======
     (function(){
         const stack = document.getElementById('fabStack');
         const btn = document.getElementById('fabToggle');
         if (!stack || !btn) return;
 
         btn.addEventListener('click', () => {
-            // bung/thu 2 nút phụ
             stack.classList.toggle('is-collapsed');
-            // mở chat luôn cho đúng "robot"
             if (!stack.classList.contains('is-collapsed')) {
                 if (window.__openChat) window.__openChat();
             }
         });
 
-        // click ra ngoài thì thu lại (không tắt chat)
         document.addEventListener('click', (e) => {
             if (!stack.contains(e.target)) stack.classList.add('is-collapsed');
         });
