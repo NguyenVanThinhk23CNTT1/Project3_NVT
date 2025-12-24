@@ -229,7 +229,7 @@
             border: 1px solid rgba(15,23,42,.10);
             box-shadow: 0 .9rem 2rem rgba(2,6,23,.08);
             background: #fff;
-            min-height: 1280px; /* ảnh dài xuống */
+            min-height: 1280px;
         }
 
         .ad-banner img{
@@ -413,6 +413,129 @@
         @media (max-width: 576px){
             .fab-label{ display:none; }
         }
+
+        /* =================== FOOTER kiểu như ảnh bạn gửi =================== */
+        .pt-footer{
+            margin-top: 28px;
+            background: #ffffff;
+            border-top: 1px solid rgba(15,23,42,.08);
+        }
+        .pt-footer .ft-wrap{
+            padding: 28px 0 18px;
+        }
+        .ft-left-brand{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            margin-bottom: 10px;
+        }
+        .ft-left-brand .ft-logo{
+            width: 46px; height: 46px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            display:flex; align-items:center; justify-content:center;
+            box-shadow: 0 .7rem 1.2rem rgba(34,199,199,.22);
+            overflow:hidden;
+            flex: 0 0 auto;
+        }
+        .ft-left-brand .ft-name{
+            font-weight: 950;
+            font-size: 1.25rem;
+            letter-spacing: -.2px;
+            color: var(--ink);
+        }
+
+        .ft-h{
+            font-weight: 950;
+            color: #0b3b8c;
+            letter-spacing: .2px;
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+        }
+
+        .ft-link{
+            display:block;
+            color: #0f172a;
+            text-decoration: none;
+            padding: 6px 0;
+        }
+        .ft-link:hover{ text-decoration: underline; }
+
+        .ft-qr-area{
+            margin-top: 10px;
+            display:flex;
+            gap:14px;
+            align-items:flex-start;
+        }
+        .ft-qr{
+            width: 120px;
+            border-radius: 12px;
+            border: 1px solid rgba(15,23,42,.10);
+            padding: 8px;
+            background:#fff;
+        }
+        .ft-store{
+            display:flex;
+            flex-direction: column;
+            gap:10px;
+        }
+        .ft-store a{ display:inline-block; }
+        .ft-store img{
+            height: 44px;
+            width: auto;
+            border-radius: 10px;
+            border: 1px solid rgba(15,23,42,.08);
+        }
+
+        .ft-contact{
+            display:flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .ft-ci{
+            display:flex;
+            gap: 12px;
+            align-items:center;
+            color: var(--ink);
+        }
+        .ft-ico{
+            width: 38px; height: 38px;
+            border-radius: 999px;
+            background: rgba(2,132,199,.10);
+            display:flex; align-items:center; justify-content:center;
+            border: 1px solid rgba(2,132,199,.16);
+            flex: 0 0 auto;
+            font-size: 18px;
+        }
+        .ft-ci a{ color: var(--ink); text-decoration: none; }
+        .ft-ci a:hover{ text-decoration: underline; }
+
+        .ft-badges{
+            margin-top: 10px;
+            display:flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .ft-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(15,23,42,.10);
+            background: #fff;
+            color: var(--ink);
+            text-decoration: none;
+            font-size: .92rem;
+        }
+        .ft-badge:hover{ box-shadow: 0 .75rem 1.5rem rgba(2,6,23,.08); }
+
+        .ft-bottom{
+            border-top: 1px solid rgba(15,23,42,.08);
+            padding: 12px 0 18px;
+            color: rgba(15,23,42,.70);
+            font-size: .92rem;
+        }
     </style>
 </head>
 
@@ -581,7 +704,7 @@
         <aside class="col-lg-3 d-none d-lg-block">
             <div class="sticky-side">
                 <div class="ad-banner">
-                    <img th:src="@{/quangcao.jpg }" alt="Quảng cáo Phòng Tốt">
+                    <img th:src="@{/quangcao.jpg}" alt="Quảng cáo Phòng Tốt">
                     <div class="ad-overlay"></div>
 
                     <div class="ad-content">
@@ -651,6 +774,102 @@
         <button class="fab-btn fab-robot" type="button" id="fabToggle" title="Robot hỗ trợ">🤖</button>
     </div>
 </div>
+
+<!-- =================== FOOTER kiểu như ảnh bạn gửi =================== -->
+<footer class="pt-footer">
+    <div class="container pt-container ft-wrap">
+        <div class="row g-4 align-items-start">
+            <!-- LEFT -->
+            <div class="col-lg-4">
+                <div class="ft-left-brand">
+                    <div class="ft-logo">
+                        <img th:src="@{/Svghome.png}" alt="Logo" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="ft-name">PHÒNGTỐT</div>
+                </div>
+
+                <div class="text-muted" style="max-width: 340px;">
+                    TẢI APP PHÒNGTỐT NGAY
+                </div>
+
+                <div class="ft-qr-area">
+                    <!-- QR: bạn đổi file tại đây nếu muốn -->
+                    <img class="ft-qr" th:src="@{/momo_qr_tight.png}" alt="QR Phòngtốt">
+
+                    <div class="ft-store">
+                        <a href="#" onclick="return false;">
+                            <img alt="App Store"
+                                 src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
+                        </a>
+                        <a href="#" onclick="return false;">
+                            <img alt="Google Play"
+                                 src="https://play.google.com/intl/en_us/badges/static/images/badges/vi_badge_web_generic.png">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-muted">Thành viên của Phòngtốt</div>
+                <div class="d-flex gap-2 flex-wrap mt-2">
+                    <span class="badge text-bg-light border">Phòngtốt</span>
+                    <span class="badge text-bg-light border">NVT</span>
+                    <span class="badge text-bg-light border">Rent</span>
+                </div>
+            </div>
+
+            <!-- MIDDLE -->
+            <div class="col-lg-4">
+                <div class="ft-h">HỆ THỐNG</div>
+                <a class="ft-link" href="/admin">Dành cho chủ trọ</a>
+                <a class="ft-link" href="#" onclick="return false;">Blog</a>
+                <a class="ft-link" href="#" onclick="return false;">Hướng dẫn</a>
+                <a class="ft-link" href="/feedback">Liên hệ</a>
+
+                <div class="mt-4 ft-h">THÔNG TIN</div>
+                <a class="ft-link" href="#" onclick="return false;">Điều khoản &amp; Cam kết</a>
+                <a class="ft-link" href="#" onclick="return false;">Quy chế hoạt động</a>
+                <a class="ft-link" href="#" onclick="return false;">Chính sách bảo mật</a>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="col-lg-4">
+                <div class="ft-h">KẾT NỐI VỚI CHÚNG TÔI</div>
+
+                <div class="ft-contact">
+                    <div class="ft-ci">
+                        <div class="ft-ico">📞</div>
+                        <div><a href="tel:0343841111"><b>0343 841 111</b></a></div>
+                    </div>
+
+                    <div class="ft-ci">
+                        <div class="ft-ico">Z</div>
+                        <div><a href="https://zalo.me/0343841111" target="_blank" rel="noopener"><b>0343841111</b></a></div>
+                    </div>
+
+                    <div class="ft-ci">
+                        <div class="ft-ico">✉</div>
+                        <div><a href="mailto:thinhvannguyen113@gmail.com"><b>thinhvannguyen113@gmail.com</b></a></div>
+                    </div>
+
+                    <div class="ft-ci">
+                        <div class="ft-ico">📍</div>
+                        <div><b>VP</b>: Bạn thay địa chỉ thật ở đây</div>
+                    </div>
+                </div>
+
+                <div class="ft-badges">
+                    <a class="ft-badge" href="#" onclick="return false;">🌐 phongtot</a>
+                    <a class="ft-badge" href="#" onclick="return false;">📘 phongtot</a>
+                    <a class="ft-badge" href="#" onclick="return false;">🎵 phongtot</a>
+                    <a class="ft-badge" href="#" onclick="return false;">▶ phongtot</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pt-container ft-bottom">
+        © <span id="ftYear"></span> Phòngtốt • Bản quyền thuộc về Phòngtốt
+    </div>
+</footer>
 
 <script>
     // ====== Front-end filter ======
@@ -838,6 +1057,12 @@
         document.addEventListener('click', (e) => {
             if (!stack.contains(e.target)) stack.classList.add('is-collapsed');
         });
+    })();
+
+    // ===== footer year =====
+    (function(){
+        const y = document.getElementById('ftYear');
+        if (y) y.innerText = new Date().getFullYear();
     })();
 </script>
 
