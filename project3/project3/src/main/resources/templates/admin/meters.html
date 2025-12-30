@@ -1,146 +1,423 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Admin - Điện nước</title>
+    <title>Admin - Nhập chỉ số điện nước</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f6f7fb;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #111827;
+        }
+
+        .sidebar a {
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            color: #fff;
+        }
+
+        .brand {
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .nav-pill {
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background .15s ease;
+        }
+
+        .nav-pill.active,
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .card {
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+        }
+
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background: rgba(255, 255, 255, .9);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(15, 23, 42, .08);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+            }
+        }
+
+        .meter-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .form-card .form-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-card .form-control,
+        .form-card .form-select {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+        }
+
+        .prev-value {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .usage-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container py-4">
 
-    <div th:replace="~{admin/fragments/topbar :: topbar('Trang chủ Admin')}"></div>
-
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h4 class="mb-0">Nhập chỉ số điện / nước</h4>
-            <div class="text-muted small">Theo phòng - tháng - năm (chống trùng + validate)</div>
-        </div>
-        <a class="btn btn-outline-secondary" href="/admin">← Dashboard</a>
+<body>
+    <!-- TOPBAR -->
+    <div class="container-fluid py-3">
+        <div th:replace="~{admin/fragments/topbar :: topbar('Điện nước')}"></div>
     </div>
 
-    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
-    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+    <div class="container-fluid app-shell">
+        <div class="row g-0">
 
-    <!-- lọc theo phòng -->
-    <form class="row g-2 align-items-end mb-3" method="get" action="/admin/meters">
-        <div class="col-md-4">
-            <label class="form-label">Lọc theo phòng</label>
-            <select class="form-select" name="roomId">
-                <option value="">-- Tất cả --</option>
-                <option th:each="r : ${rooms}"
-                        th:value="${r.id}"
-                        th:selected="${roomId != null and roomId == r.id}"
-                        th:text="${r.roomCode + ' - ' + r.roomName}"></option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button class="btn btn-primary">Lọc</button>
-        </div>
-    </form>
-
-    <!-- Form nhập -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <h6 class="mb-3">Thêm chỉ số</h6>
-
-            <form class="row g-3" method="post" action="/admin/meters/create" th:object="${newMeter}">
-                <div class="col-md-4">
-                    <label class="form-label">Phòng *</label>
-                    <select class="form-select" th:field="*{roomId}" required>
-                        <option value="">-- chọn phòng --</option>
-                        <option th:each="r : ${rooms}" th:value="${r.id}"
-                                th:text="${r.roomCode + ' - ' + r.roomName}"
-                                th:selected="${roomId != null and roomId == r.id}"></option>
-                    </select>
+            <!-- Sidebar -->
+            <aside class="sidebar p-3">
+                <div class="mb-4 d-flex align-items-center gap-2">
+                    <img th:src="@{/anhdaidien.jpg}" alt="Logo"
+                        style="width:44px;height:44px;border-radius:12px;object-fit:cover;">
+                    <div class="brand fs-5">ADMIN</div>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Tháng *</label>
-                    <input type="number" class="form-control" th:field="*{billMonth}" min="1" max="12" required placeholder="12">
+                <div class="d-grid gap-2" id="adminNav">
+                    <a class="nav-pill" href="/admin" data-path="/admin">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                    <a class="nav-pill" href="/admin/rooms" data-prefix="/admin/rooms">
+                        <i class="bi bi-house-door me-2"></i> Phòng
+                    </a>
+                    <a class="nav-pill" href="/admin/tenants" data-prefix="/admin/tenants">
+                        <i class="bi bi-people me-2"></i> Khách thuê
+                    </a>
+                    <a class="nav-pill" href="/admin/booking-requests" data-prefix="/admin/booking-requests">
+                        <i class="bi bi-inbox me-2"></i> Yêu cầu thuê
+                    </a>
+                    <a class="nav-pill" href="/admin/contracts" data-prefix="/admin/contracts">
+                        <i class="bi bi-file-earmark-text me-2"></i> Hợp đồng
+                    </a>
+                    <a class="nav-pill active" href="/admin/meters" data-prefix="/admin/meters">
+                        <i class="bi bi-lightning-charge me-2"></i> Điện nước
+                    </a>
+                    <a class="nav-pill" href="/admin/bills" data-prefix="/admin/bills">
+                        <i class="bi bi-receipt me-2"></i> Hóa đơn
+                    </a>
+                    <a class="nav-pill" href="/admin/feedbacks" data-prefix="/admin/feedbacks">
+                        <i class="bi bi-wrench-adjustable me-2"></i> Phản ánh
+                    </a>
+                    <a class="nav-pill" href="/admin/hostels" data-prefix="/admin/hostels">
+                        <i class="bi bi-building me-2"></i> Nhà trọ
+                    </a>
+                    <a class="nav-pill" href="/admin/cash-payments" data-prefix="/admin/cash-payments">
+                        <i class="bi bi-cash-coin me-2"></i> Duyệt thanh toán
+                    </a>
+                    <a class="nav-pill" href="/admin/users" data-prefix="/admin/users">
+                        <i class="bi bi-person-gear me-2"></i> Quản lý User
+                    </a>
+                    <a class="nav-pill" href="/admin/revenue" data-prefix="/admin/revenue">
+                        <i class="bi bi-graph-up me-2"></i> Thống kê
+                    </a>
                 </div>
+            </aside>
 
-                <div class="col-md-2">
-                    <label class="form-label">Năm *</label>
-                    <input type="number" class="form-control" th:field="*{billYear}" min="2000" required placeholder="2025">
-                </div>
+            <!-- Main -->
+            <main class="col p-0">
+                <header class="main-header px-4 py-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="fw-semibold">Nhập chỉ số điện / nước</div>
+                        <div class="text-muted small">Ghi chỉ số hàng tháng cho từng phòng</div>
+                    </div>
+                    <a class="btn btn-outline-secondary btn-sm" href="/admin">← Dashboard</a>
+                </header>
 
-                <div class="col-md-2">
-                    <label class="form-label">Điện cũ</label>
-                    <input type="number" class="form-control" th:field="*{electricOld}" min="0" placeholder="(tự lấy nếu trống)">
-                </div>
+                <div class="p-4">
+                    <!-- Alert messages -->
+                    <div th:if="${msg}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i> <span th:text="${msg}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <div th:if="${err}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i> <span th:text="${err}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Điện mới *</label>
-                    <input type="number" class="form-control" th:field="*{electricNew}" min="0" required>
-                </div>
+                    <div class="row g-4">
+                        <!-- Form nhập chỉ số -->
+                        <div class="col-lg-5">
+                            <div class="card form-card p-4">
+                                <h5 class="mb-4"><i class="bi bi-plus-circle me-2"></i>Thêm chỉ số mới</h5>
 
-                <div class="col-md-2">
-                    <label class="form-label">Nước cũ</label>
-                    <input type="number" class="form-control" th:field="*{waterOld}" min="0" placeholder="(tự lấy nếu trống)">
-                </div>
+                                <form method="post" action="/admin/meters/create" th:object="${newMeter}"
+                                    id="meterForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Phòng *</label>
+                                        <select class="form-select" th:field="*{roomId}" required id="roomSelect">
+                                            <option value="">-- Chọn phòng --</option>
+                                            <option th:each="r : ${rooms}" th:value="${r.id}"
+                                                th:text="${r.roomCode + ' - ' + r.roomName}"
+                                                th:selected="${roomId != null and roomId == r.id}"></option>
+                                        </select>
+                                    </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Nước mới *</label>
-                    <input type="number" class="form-control" th:field="*{waterNew}" min="0" required>
-                </div>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <label class="form-label">Tháng *</label>
+                                            <select class="form-select" th:field="*{billMonth}" required
+                                                id="monthSelect">
+                                                <option value="">-- Tháng --</option>
+                                                <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                                                    th:text="'Tháng ' + ${m}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Năm *</label>
+                                            <input type="number" class="form-control" th:field="*{billYear}" min="2000"
+                                                required placeholder="2025" id="yearInput">
+                                        </div>
+                                    </div>
 
-                <div class="col-12">
-                    <button class="btn btn-primary">Lưu chỉ số</button>
+                                    <!-- Hiển thị chỉ số tháng trước -->
+                                    <div class="prev-value mt-3" id="prevInfo" style="display: none;">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <span id="prevInfoText">Chỉ số tháng trước: Điện = 0, Nước = 0</span>
+                                    </div>
+
+                                    <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
+
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <label class="form-label">⚡ Điện cũ</label>
+                                            <input type="number" class="form-control" th:field="*{electricOld}" min="0"
+                                                placeholder="Tự lấy" id="electricOld">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">⚡ Điện mới *</label>
+                                            <input type="number" class="form-control" th:field="*{electricNew}" min="0"
+                                                required id="electricNew">
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-6">
+                                            <label class="form-label">💧 Nước cũ</label>
+                                            <input type="number" class="form-control" th:field="*{waterOld}" min="0"
+                                                placeholder="Tự lấy" id="waterOld">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">💧 Nước mới *</label>
+                                            <input type="number" class="form-control" th:field="*{waterNew}" min="0"
+                                                required id="waterNew">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-light w-100 mt-4 fw-bold">
+                                        <i class="bi bi-save me-2"></i>Lưu chỉ số
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách chỉ số -->
+                        <div class="col-lg-7">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Lịch sử chỉ số</h5>
+
+                                    <!-- Filter theo phòng -->
+                                    <form class="d-flex gap-2" method="get" action="/admin/meters">
+                                        <select class="form-select form-select-sm" name="roomId" style="width: auto;">
+                                            <option value="">Tất cả phòng</option>
+                                            <option th:each="r : ${rooms}" th:value="${r.id}"
+                                                th:selected="${roomId != null and roomId == r.id}"
+                                                th:text="${r.roomCode}"></option>
+                                        </select>
+                                        <button class="btn btn-sm btn-primary">Lọc</button>
+                                    </form>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Phòng</th>
+                                                <th class="text-center">Kỳ</th>
+                                                <th class="text-center">⚡ Điện</th>
+                                                <th class="text-center">💧 Nước</th>
+                                                <th class="text-end">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="m : ${meters}">
+                                                <td>
+                                                    <span class="fw-semibold" th:text="${roomMap[m.roomId]}">P101</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-secondary"
+                                                        th:text="${m.billMonth + '/' + m.billYear}">12/2024</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div th:text="${m.electricOld + ' → ' + m.electricNew}">100 → 150
+                                                    </div>
+                                                    <span class="usage-badge bg-warning text-dark"
+                                                        th:text="${'Dùng: ' + (m.electricNew - m.electricOld) + ' kWh'}">Dùng:
+                                                        50 kWh</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div th:text="${m.waterOld + ' → ' + m.waterNew}">10 → 15</div>
+                                                    <span class="usage-badge bg-info text-dark"
+                                                        th:text="${'Dùng: ' + (m.waterNew - m.waterOld) + ' m³'}">Dùng:
+                                                        5 m³</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <form method="post" th:action="@{'/admin/meters/delete/' + ${m.id}}"
+                                                        class="d-inline"
+                                                        onsubmit="return confirm('Xóa bản ghi chỉ số này?');">
+                                                        <input type="hidden" name="roomId" th:value="${roomId}">
+                                                        <button class="btn btn-sm btn-outline-danger">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(meters)}">
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                                    Chưa có dữ liệu chỉ số. Hãy thêm mới!
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </main>
         </div>
     </div>
 
-    <!-- List -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <h6 class="mb-3">Lịch sử chỉ số</h6>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Room ID</th>
-                        <th>Tháng</th>
-                        <th>Năm</th>
-                        <th>Điện (cũ→mới)</th>
-                        <th>Nước (cũ→mới)</th>
-                        <th class="text-end">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="m : ${meters}">
-                        <td th:text="${m.id}"></td>
-                        <td th:text="${roomMap[m.roomId]}"></td>
-                        <td th:text="${m.billMonth}"></td>
-                        <td th:text="${m.billYear}"></td>
-                        <td th:text="${m.electricOld + ' → ' + m.electricNew}"></td>
-                        <td th:text="${m.waterOld + ' → ' + m.waterNew}"></td>
-                        <td class="text-end">
-                            <form method="post" th:action="@{'/admin/meters/delete/' + ${m.id}}" class="d-inline"
-                                  onsubmit="return confirm('Xóa bản ghi chỉ số này?');">
-                                <input type="hidden" name="roomId" th:value="${roomId}">
-                                <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(meters)}">
-                        <td colspan="7" class="text-center text-muted">Chưa có dữ liệu chỉ số</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+    <script>
+        // Auto-fill chỉ số tháng trước khi thay đổi phòng/tháng/năm
+        const roomSelect = document.getElementById('roomSelect');
+        const monthSelect = document.getElementById('monthSelect');
+        const yearInput = document.getElementById('yearInput');
+        const electricOld = document.getElementById('electricOld');
+        const waterOld = document.getElementById('waterOld');
+        const prevInfo = document.getElementById('prevInfo');
+        const prevInfoText = document.getElementById('prevInfoText');
 
-            <div class="text-muted small mt-2">
-                Tạm thời hiển thị Room ID để làm nhanh. Sau này mình đổi sang hiện mã phòng.
-            </div>
-        </div>
-    </div>
+        function fetchPreviousReading() {
+            const roomId = roomSelect.value;
+            const month = monthSelect.value;
+            const year = yearInput.value;
 
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            if (!roomId || !month || !year) {
+                prevInfo.style.display = 'none';
+                return;
+            }
+
+            fetch(`/admin/meters/api/previous?roomId=${roomId}&month=${month}&year=${year}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.found) {
+                        electricOld.value = data.electricOld;
+                        waterOld.value = data.waterOld;
+                        prevInfoText.textContent = `Chỉ số tháng ${data.prevMonth}/${data.prevYear}: Điện = ${data.electricOld}, Nước = ${data.waterOld}`;
+                        prevInfo.style.display = 'block';
+                    } else {
+                        electricOld.value = 0;
+                        waterOld.value = 0;
+                        prevInfoText.textContent = 'Không tìm thấy chỉ số tháng trước. Mặc định = 0';
+                        prevInfo.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching previous reading:', err);
+                    prevInfo.style.display = 'none';
+                });
+        }
+
+        // Attach event listeners
+        roomSelect.addEventListener('change', fetchPreviousReading);
+        monthSelect.addEventListener('change', fetchPreviousReading);
+        yearInput.addEventListener('change', fetchPreviousReading);
+        yearInput.addEventListener('blur', fetchPreviousReading);
+
+        // Set default year to current year
+        if (!yearInput.value) {
+            yearInput.value = new Date().getFullYear();
+        }
+
+        // Sidebar active state
+        (function () {
+            const path = window.location.pathname || '';
+            const nav = document.getElementById('adminNav');
+            if (!nav) return;
+
+            const links = Array.from(nav.querySelectorAll('a.nav-pill'));
+            links.forEach(a => a.classList.remove('active'));
+
+            const pref = links.find(a => a.dataset.prefix && path.startsWith(a.dataset.prefix));
+            if (pref) { pref.classList.add('active'); }
+        })();
+    </script>
 </body>
+
 </html>

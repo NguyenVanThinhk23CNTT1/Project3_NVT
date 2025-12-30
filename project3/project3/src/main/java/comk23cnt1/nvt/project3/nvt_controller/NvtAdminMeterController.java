@@ -27,9 +27,9 @@ public class NvtAdminMeterController {
 
     @GetMapping
     public String page(Model model,
-                       @RequestParam(value="roomId", required=false) Long roomId,
-                       @RequestParam(value="msg", required=false) String msg,
-                       @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "roomId", required = false) Long roomId,
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
 
         var rooms = roomService.findAll();
 
@@ -39,12 +39,12 @@ public class NvtAdminMeterController {
                         r -> r.getId(),
                         r -> {
                             String base = r.getRoomCode() + " - " + r.getRoomName();
-                            if (r.getHostel() != null) base += " (" + r.getHostel().getName() + ")";
+                            if (r.getHostel() != null)
+                                base += " (" + r.getHostel().getName() + ")";
                             return base;
                         },
                         (a, b) -> a,
-                        LinkedHashMap::new
-                ));
+                        LinkedHashMap::new));
 
         model.addAttribute("rooms", rooms);
         model.addAttribute("roomMap", roomMap);
@@ -53,12 +53,13 @@ public class NvtAdminMeterController {
         model.addAttribute("err", err);
         model.addAttribute("roomId", roomId);
 
-        if (roomId != null) model.addAttribute("meters", meterService.findByRoom(roomId));
-        else model.addAttribute("meters", meterService.findAll());
+        if (roomId != null)
+            model.addAttribute("meters", meterService.findByRoom(roomId));
+        else
+            model.addAttribute("meters", meterService.findAll());
 
         return "admin/meters";
     }
-
 
     @PostMapping("/create")
     public String create(@ModelAttribute("newMeter") NvtMeterReading r) {
@@ -73,7 +74,7 @@ public class NvtAdminMeterController {
     }
 
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id, @RequestParam(value="roomId", required=false) Long roomId) {
+    public String delete(@PathVariable Long id, @RequestParam(value = "roomId", required = false) Long roomId) {
         try {
             meterService.delete(id);
             String back = (roomId == null) ? "/admin/meters" : ("/admin/meters?roomId=" + roomId);
@@ -82,6 +83,45 @@ public class NvtAdminMeterController {
             String back = (roomId == null) ? "/admin/meters" : ("/admin/meters?roomId=" + roomId);
             return "redirect:" + back + "&err=" + enc(e.getMessage());
         }
+    }
+
+    /**
+     * API lấy chỉ số tháng trước để tự động điền
+     */
+    @GetMapping("/api/previous")
+    @ResponseBody
+    public Map<String, Object> getPreviousReading(
+            @RequestParam("roomId") Long roomId,
+            @RequestParam("month") Integer month,
+            @RequestParam("year") Integer year) {
+
+        Map<String, Object> result = new java.util.HashMap<>();
+
+        // Tính tháng trước
+        int prevMonth = month - 1;
+        int prevYear = year;
+        if (prevMonth < 1) {
+            prevMonth = 12;
+            prevYear = year - 1;
+        }
+
+        // Tìm chỉ số tháng trước
+        var prevReading = meterService.findByRoomAndMonthAndYear(roomId, prevMonth, prevYear);
+
+        if (prevReading.isPresent()) {
+            NvtMeterReading prev = prevReading.get();
+            result.put("found", true);
+            result.put("electricOld", prev.getElectricNew()); // Chỉ số mới của tháng trước = chỉ số cũ tháng này
+            result.put("waterOld", prev.getWaterNew());
+            result.put("prevMonth", prevMonth);
+            result.put("prevYear", prevYear);
+        } else {
+            result.put("found", false);
+            result.put("electricOld", 0);
+            result.put("waterOld", 0);
+        }
+
+        return result;
     }
 
     private String enc(String s) {

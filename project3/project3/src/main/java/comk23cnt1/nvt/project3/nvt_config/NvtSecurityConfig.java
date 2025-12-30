@@ -9,54 +9,71 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // Enable @PreAuthorize, @Secured annotations
 public class NvtSecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        private final comk23cnt1.nvt.project3.nvt_security.NvtAccessDeniedHandler accessDeniedHandler;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        public NvtSecurityConfig(comk23cnt1.nvt.project3.nvt_security.NvtAccessDeniedHandler accessDeniedHandler) {
+                this.accessDeniedHandler = accessDeniedHandler;
+        }
 
-        http
-                // dev nhanh: để POST form không bị 403 khi chưa dùng csrf token
-                .csrf(csrf -> csrf.disable())
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-                .authorizeHttpRequests(auth -> auth
-                        // public pages
-                        .requestMatchers(
-                                "/", "/rooms/**", "/bills", "/feedback/**",
-                                "/css/**", "/js/**", "/images/**", "/webjars/**"
-                        ).permitAll()
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-                        // login page permit
-                        .requestMatchers("/admin/login").permitAll()
+                http
+                                // dev nhanh: để POST form không bị 403 khi chưa dùng csrf token
+                                .csrf(csrf -> csrf.disable())
 
-                        // admin protect
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .authorizeHttpRequests(auth -> auth
+                                                // public pages
+                                                .requestMatchers(
+                                                                "/", "/rooms/**", "/bills", "/feedback/**",
+                                                                "/css/**", "/js/**", "/images/**", "/webjars/**",
+                                                                "/access-denied")
+                                                .permitAll()
 
-                        // others
-                        .anyRequest().permitAll()
-                )
+                                                // login and register pages
+                                                .requestMatchers("/login", "/register").permitAll()
 
-                .formLogin(form -> form
-                        .loginPage("/admin/login")
-                        .loginProcessingUrl("/admin/login")
-                        .defaultSuccessUrl("/admin", true)
-                        .failureUrl("/admin/login?error=true")
-                        .permitAll()
-                )
+                                                // admin only
+                                                .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                .logout(logout -> logout
-                        .logoutUrl("/admin/logout")
-                        .logoutSuccessUrl("/admin/login?logout=true")
-                )
+                                                // user and admin can access
+                                                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
 
-                .httpBasic(Customizer.withDefaults());
+                                                // api endpoints require authentication
+                                                .requestMatchers("/api/**").authenticated()
 
-        return http.build();
-    }
+                                                // others
+                                                .anyRequest().permitAll())
+
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .loginProcessingUrl("/login")
+                                                .defaultSuccessUrl("/user/home", true) // Tất cả user đều về /user/home
+                                                .failureUrl("/login?error=true")
+                                                .permitAll())
+
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login?logout=true"))
+
+                                // Access denied handler
+                                .exceptionHandling(ex -> ex
+                                                .accessDeniedHandler(accessDeniedHandler))
+
+                                .httpBasic(Customizer.withDefaults());
+
+                return http.build();
+        }
 }

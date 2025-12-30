@@ -11,5 +11,7 @@ public interface NvtFeedbackRepository extends JpaRepository<NvtFeedback, Long> 
 
     List<NvtFeedback> findByStatusOrderByIdDesc(NvtFeedback.FeedbackStatus status);
 
+    List<NvtFeedback> findByTitleContainingOrContentContainingOrderByIdDesc(String title, String content);
+
     long countByStatus(NvtFeedback.FeedbackStatus status);
 }

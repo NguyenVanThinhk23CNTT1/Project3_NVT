@@ -1,6 +1,7 @@
 package comk23cnt1.nvt.project3.nvt_security;
 
 import comk23cnt1.nvt.project3.nvt_entity.NvtUser;
+import comk23cnt1.nvt.project3.nvt_enum.Role;
 import comk23cnt1.nvt.project3.nvt_repository.NvtUserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +26,7 @@ public class NvtSeedAdmin implements CommandLineRunner {
             NvtUser u = new NvtUser();
             u.setUsername(username);
             u.setPassword(encoder.encode("123456")); // -> password_hash
-            u.setRole("ADMIN");
+            u.setRole(Role.ADMIN);
             u.setEnabled(true);
             u.setStatus("ACTIVE");
             u.setFullName("Administrator");

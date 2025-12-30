@@ -7,5 +7,10 @@ import java.util.Optional;
 
 public interface NvtUserRepository extends JpaRepository<NvtUser, Long> {
     Optional<NvtUser> findByUsername(String username);
+
     boolean existsByUsername(String username);
+
+    Optional<NvtUser> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }

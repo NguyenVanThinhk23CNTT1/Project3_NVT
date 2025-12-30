@@ -23,13 +23,15 @@ public class NvtFeedbackServiceImpl implements NvtFeedbackService {
 
     @Override
     public List<NvtFeedback> findByStatus(NvtFeedback.FeedbackStatus status) {
-        if (status == null) return repo.findAll();
+        if (status == null)
+            return repo.findAll();
         return repo.findByStatusOrderByIdDesc(status);
     }
 
     @Override
     public long countByStatus(NvtFeedback.FeedbackStatus status) {
-        if (status == null) return repo.count();
+        if (status == null)
+            return repo.count();
         return repo.countByStatus(status);
     }
 
@@ -48,16 +50,20 @@ public class NvtFeedbackServiceImpl implements NvtFeedbackService {
 
         f.setTitle(f.getTitle().trim());
         f.setContent(f.getContent().trim());
-        if (f.getStatus() == null) f.setStatus(NvtFeedback.FeedbackStatus.NEW);
+        if (f.getStatus() == null)
+            f.setStatus(NvtFeedback.FeedbackStatus.NEW);
 
         return repo.save(f);
     }
 
     @Override
-    public NvtFeedback updateStatus(Long id, NvtFeedback.FeedbackStatus status, String adminNote) {
+    public NvtFeedback updateStatus(Long id, NvtFeedback.FeedbackStatus status, String adminNote, String adminReply) {
         NvtFeedback f = findById(id);
         f.setStatus(status == null ? NvtFeedback.FeedbackStatus.NEW : status);
-        if (adminNote != null) f.setAdminNote(adminNote.trim());
+        if (adminNote != null)
+            f.setAdminNote(adminNote.trim());
+        if (adminReply != null)
+            f.setAdminReply(adminReply.trim());
         return repo.save(f);
     }
 

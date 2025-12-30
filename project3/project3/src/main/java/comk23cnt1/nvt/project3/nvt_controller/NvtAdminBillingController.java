@@ -5,11 +5,13 @@ import comk23cnt1.nvt.project3.nvt_entity.NvtContract;
 import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
 import comk23cnt1.nvt.project3.nvt_entity.NvtTenant;
 import comk23cnt1.nvt.project3.nvt_entity.NvtBill;
+import comk23cnt1.nvt.project3.nvt_entity.NvtMeterReading;
 import comk23cnt1.nvt.project3.nvt_service.NvtBillingService;
 import comk23cnt1.nvt.project3.nvt_service.NvtContractService;
 import comk23cnt1.nvt.project3.nvt_service.NvtRoomService;
 import comk23cnt1.nvt.project3.nvt_service.NvtTenantService;
 import comk23cnt1.nvt.project3.nvt_service.NvtMailService;
+import comk23cnt1.nvt.project3.nvt_service.NvtMeterReadingService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,38 +32,47 @@ public class NvtAdminBillingController {
     private final NvtRoomService roomService;
     private final NvtTenantService tenantService;
     private final NvtMailService mailService;
+    private final NvtMeterReadingService meterService;
 
     public NvtAdminBillingController(
             NvtBillingService billingService,
             NvtContractService contractService,
             NvtRoomService roomService,
             NvtTenantService tenantService,
-            NvtMailService mailService
-    ) {
+            NvtMailService mailService,
+            NvtMeterReadingService meterService) {
         this.billingService = billingService;
         this.contractService = contractService;
         this.roomService = roomService;
         this.tenantService = tenantService;
         this.mailService = mailService;
+        this.meterService = meterService;
     }
 
     @GetMapping
     public String bills(Model model,
-                        @RequestParam(value = "msg", required = false) String msg,
-                        @RequestParam(value = "err", required = false) String err) {
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
 
         var bills = billingService.findAllBills();
         var contracts = contractService.findAll();
 
         Map<Long, String> contractMap = new LinkedHashMap<>();
         Map<Long, String> roomMap = new LinkedHashMap<>();
+        Map<Long, Long> contractRoomMap = new LinkedHashMap<>(); // contractId -> roomId
 
         for (NvtContract c : contracts) {
             NvtRoom room = null;
-            try { room = roomService.findById(c.getRoomId()); } catch (Exception ignored) {}
+            try {
+                room = roomService.findById(c.getRoomId());
+            } catch (Exception ignored) {
+            }
 
             NvtTenant tenant = null;
-            try { tenant = tenantService.findById(c.getTenantId()); } catch (Exception ignored) {}
+            try {
+                tenant = tenantService.findById(c.getTenantId());
+            } catch (Exception ignored) {
+            }
 
             String roomLabel = (room == null)
                     ? ("Room#" + c.getRoomId())
@@ -70,29 +82,64 @@ public class NvtAdminBillingController {
                     ? ("Tenant#" + c.getTenantId())
                     : tenant.getFullName() + " - " + tenant.getPhone();
 
-            String contractLabel =
-                    c.getContractCode()
-                            + " | " + roomLabel
-                            + " | Đại diện: " + tenantLabel;
+            String contractLabel = c.getContractCode()
+                    + " | " + roomLabel
+                    + " | Đại diện: " + tenantLabel;
 
             contractMap.put(c.getId(), contractLabel);
             roomMap.put(c.getRoomId(), roomLabel);
+            contractRoomMap.put(c.getId(), c.getRoomId());
         }
 
         model.addAttribute("bills", bills);
         model.addAttribute("contracts", contracts);
         model.addAttribute("contractMap", contractMap);
         model.addAttribute("roomMap", roomMap);
+        model.addAttribute("contractRoomMap", contractRoomMap);
         model.addAttribute("msg", msg);
         model.addAttribute("err", err);
 
         return "admin/bills";
     }
 
+    /**
+     * API lấy thông tin chỉ số điện nước khi tạo hóa đơn
+     */
+    @GetMapping("/api/meter-info")
+    @ResponseBody
+    public Map<String, Object> getMeterInfo(
+            @RequestParam("roomId") Long roomId,
+            @RequestParam("month") Integer month,
+            @RequestParam("year") Integer year) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        var meterOpt = meterService.findByRoomAndMonthAndYear(roomId, month, year);
+
+        if (meterOpt.isPresent()) {
+            NvtMeterReading meter = meterOpt.get();
+            int electricUsage = meter.getElectricNew() - meter.getElectricOld();
+            int waterUsage = meter.getWaterNew() - meter.getWaterOld();
+
+            result.put("found", true);
+            result.put("electricOld", meter.getElectricOld());
+            result.put("electricNew", meter.getElectricNew());
+            result.put("electricUsage", electricUsage);
+            result.put("waterOld", meter.getWaterOld());
+            result.put("waterNew", meter.getWaterNew());
+            result.put("waterUsage", waterUsage);
+        } else {
+            result.put("found", false);
+            result.put("message", "Chưa có chỉ số điện nước cho tháng " + month + "/" + year);
+        }
+
+        return result;
+    }
+
     @PostMapping("/create")
     public String create(@RequestParam Long contractId,
-                         @RequestParam Integer billMonth,
-                         @RequestParam Integer billYear) {
+            @RequestParam Integer billMonth,
+            @RequestParam Integer billYear) {
         try {
             billingService.createBill(contractId, billMonth, billYear);
             return "redirect:/admin/bills?msg=" + enc("Tạo hóa đơn thành công");
@@ -103,8 +150,8 @@ public class NvtAdminBillingController {
 
     @GetMapping("/{billId}")
     public String billDetail(@PathVariable Long billId, Model model,
-                             @RequestParam(value = "msg", required = false) String msg,
-                             @RequestParam(value = "err", required = false) String err) {
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
 
         model.addAttribute("bill", billingService.findBill(billId));
         model.addAttribute("payments", billingService.payments(billId));
@@ -117,7 +164,7 @@ public class NvtAdminBillingController {
 
     @PostMapping("/{billId}/pay")
     public String pay(@PathVariable Long billId,
-                      @ModelAttribute("newPayment") NvtPayment payment) {
+            @ModelAttribute("newPayment") NvtPayment payment) {
         try {
             // admin ghi nhận thanh toán (có thể đổi PENDING -> SUCCESS)
             var saved = billingService.addPayment(billId, payment);
@@ -131,8 +178,7 @@ public class NvtAdminBillingController {
                             email.trim(),
                             "Xác nhận thanh toán hóa đơn (tiền mặt)",
                             bill,
-                            saved.getAmount()
-                    );
+                            saved.getAmount());
                 }
             }
 
@@ -144,10 +190,13 @@ public class NvtAdminBillingController {
 
     // CASHREQ|email|timestamp
     private String extractEmailFromTxn(String txn) {
-        if (txn == null) return null;
-        if (!txn.startsWith("CASHREQ|")) return null;
+        if (txn == null)
+            return null;
+        if (!txn.startsWith("CASHREQ|"))
+            return null;
         String[] parts = txn.split("\\|");
-        if (parts.length >= 2) return parts[1];
+        if (parts.length >= 2)
+            return parts[1];
         return null;
     }
 

@@ -28,9 +28,9 @@ public class NvtAuthUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(u.getUsername())
                 .password(u.getPassword()) // field password map -> password_hash
-                .disabled(!enabled)        // enabled=false => disabled
-                .accountLocked(locked)     // status=LOCKED => locked
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole()))) // ADMIN/USER
+                .disabled(!enabled) // enabled=false => disabled
+                .accountLocked(locked) // status=LOCKED => locked
+                .authorities(List.of(new SimpleGrantedAuthority(u.getRole().getRoleWithPrefix()))) // ROLE_ADMIN/ROLE_USER
                 .build();
     }
 }

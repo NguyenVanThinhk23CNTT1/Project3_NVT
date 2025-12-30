@@ -28,10 +28,10 @@ public class NvtUserPageController {
     private final NvtPaymentRepository paymentRepo;
 
     public NvtUserPageController(NvtRoomRepository roomRepo,
-                                 NvtBillRepository billRepo,
-                                 NvtBookingRequestRepository bookingRepo,
-                                 NvtBillingService billingService,
-                                 NvtPaymentRepository paymentRepo) {
+            NvtBillRepository billRepo,
+            NvtBookingRequestRepository bookingRepo,
+            NvtBillingService billingService,
+            NvtPaymentRepository paymentRepo) {
         this.roomRepo = roomRepo;
         this.billRepo = billRepo;
         this.bookingRepo = bookingRepo;
@@ -41,8 +41,23 @@ public class NvtUserPageController {
 
     @GetMapping("/")
     public String home(Model model,
-                       @RequestParam(value="msg", required=false) String msg,
-                       @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
+        List<NvtRoom> emptyRooms = roomRepo.findByStatusOrderByFloorAscRoomCodeAsc(NvtRoom.RoomStatus.EMPTY);
+        model.addAttribute("rooms", emptyRooms);
+        model.addAttribute("msg", msg);
+        model.addAttribute("err", err);
+        return "user/home";
+    }
+
+    /**
+     * Endpoint sau khi login thành công
+     * Cả USER và ADMIN đều redirect về đây
+     */
+    @GetMapping("/user/home")
+    public String userHome(Model model,
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
         List<NvtRoom> emptyRooms = roomRepo.findByStatusOrderByFloorAscRoomCodeAsc(NvtRoom.RoomStatus.EMPTY);
         model.addAttribute("rooms", emptyRooms);
         model.addAttribute("msg", msg);
@@ -52,8 +67,8 @@ public class NvtUserPageController {
 
     @GetMapping("/rooms/{id}")
     public String roomDetail(@PathVariable Long id, Model model,
-                             @RequestParam(value="msg", required=false) String msg,
-                             @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
         NvtRoom room = roomRepo.findByIdWithHostel(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng"));
 
@@ -65,9 +80,9 @@ public class NvtUserPageController {
 
     @PostMapping("/rooms/{id}/book")
     public String book(@PathVariable Long id,
-                       @RequestParam String fullName,
-                       @RequestParam String phone,
-                       @RequestParam(value="note", required=false) String note) {
+            @RequestParam String fullName,
+            @RequestParam String phone,
+            @RequestParam(value = "note", required = false) String note) {
         try {
             if (fullName == null || fullName.trim().isBlank())
                 return "redirect:/rooms/" + id + "?err=" + enc("Họ tên không được rỗng");
@@ -98,9 +113,9 @@ public class NvtUserPageController {
 
     @GetMapping("/bills")
     public String billLookup(Model model,
-                             @RequestParam(value="roomId", required=false) Long roomId,
-                             @RequestParam(value="msg", required=false) String msg,
-                             @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "roomId", required = false) Long roomId,
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
         model.addAttribute("rooms", roomRepo.findAll());
         model.addAttribute("roomId", roomId);
         model.addAttribute("msg", msg);
@@ -117,8 +132,8 @@ public class NvtUserPageController {
 
     @GetMapping("/bills/{billId}")
     public String billDetail(@PathVariable Long billId, Model model,
-                             @RequestParam(value="msg", required=false) String msg,
-                             @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
         NvtBill bill = billingService.findBill(billId);
         model.addAttribute("bill", bill);
         model.addAttribute("payments", paymentRepo.findByBillIdOrderByPaidAtDesc(billId));
@@ -128,12 +143,12 @@ public class NvtUserPageController {
     }
 
     // =========================
-//  MOMO: PENDING
-// =========================
+    // MOMO: PENDING
+    // =========================
     @PostMapping("/bills/{billId}/pay-momo")
     public String payMomo(@PathVariable Long billId,
-                          @RequestParam String email,
-                          @RequestParam String transactionCode) {
+            @RequestParam String email,
+            @RequestParam String transactionCode) {
         try {
             if (email == null || email.trim().isBlank()) {
                 return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
@@ -169,12 +184,12 @@ public class NvtUserPageController {
     }
 
     // =========================
-//  ZALOPAY: PENDING
-// =========================
+    // ZALOPAY: PENDING
+    // =========================
     @PostMapping("/bills/{billId}/pay-zalopay")
     public String payZaloPay(@PathVariable Long billId,
-                             @RequestParam String email,
-                             @RequestParam String transactionCode) {
+            @RequestParam String email,
+            @RequestParam String transactionCode) {
         try {
             if (email == null || email.trim().isBlank()) {
                 return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
@@ -210,11 +225,11 @@ public class NvtUserPageController {
     }
 
     // =========================
-    //  TIỀN MẶT CHUẨN: PENDING
+    // TIỀN MẶT CHUẨN: PENDING
     // =========================
     @PostMapping("/bills/{billId}/pay-cash")
     public String payCash(@PathVariable Long billId,
-                          @RequestParam String email) {
+            @RequestParam String email) {
         try {
             if (email == null || email.trim().isBlank()) {
                 return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
@@ -240,19 +255,20 @@ public class NvtUserPageController {
 
             paymentRepo.save(p);
 
-            return "redirect:/bills/" + billId + "?msg=" + enc("Đã gửi yêu cầu thanh toán tiền mặt. Vui lòng chờ Admin xác nhận.");
+            return "redirect:/bills/" + billId + "?msg="
+                    + enc("Đã gửi yêu cầu thanh toán tiền mặt. Vui lòng chờ Admin xác nhận.");
         } catch (Exception e) {
             return "redirect:/bills/" + billId + "?err=" + enc(e.getMessage());
         }
     }
 
     // =========================
-    //  CHUYỂN KHOẢN: PENDING
+    // CHUYỂN KHOẢN: PENDING
     // =========================
     @PostMapping("/bills/{billId}/pay-bank")
     public String payBank(@PathVariable Long billId,
-                          @RequestParam String email,
-                          @RequestParam String transactionCode) {
+            @RequestParam String email,
+            @RequestParam String transactionCode) {
         try {
             if (email == null || email.trim().isBlank()) {
                 return "redirect:/bills/" + billId + "?err=" + enc("Email không được rỗng");
@@ -281,7 +297,8 @@ public class NvtUserPageController {
 
             paymentRepo.save(p);
 
-            return "redirect:/bills/" + billId + "?msg=" + enc("Đã gửi yêu cầu chuyển khoản. Vui lòng chờ Admin xác nhận.");
+            return "redirect:/bills/" + billId + "?msg="
+                    + enc("Đã gửi yêu cầu chuyển khoản. Vui lòng chờ Admin xác nhận.");
         } catch (Exception e) {
             return "redirect:/bills/" + billId + "?err=" + enc(e.getMessage());
         }

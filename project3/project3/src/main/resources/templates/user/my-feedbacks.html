@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phản ánh của tôi - Phòngtốt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #22c7c7;
+            --brand-2: #0ea5a5;
+            --brand-dark: #0b5564;
+        }
+
+        body {
+            background: #f8f9fa;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 10px 20px;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+
+        .badge-new {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+        }
+
+        .badge-processing {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .badge-done {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .feedback-item {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .feedback-item:hover {
+            transform: translateX(5px);
+            background-color: #f8f9fa;
+            border-left-color: var(--brand);
+        }
+
+        .reply-box {
+            background-color: #f1fcfc;
+            border-radius: 12px;
+            padding: 15px;
+            border-left: 4px solid var(--brand);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg py-3 sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+                <span style="font-size: 1.5rem;">🏠</span>
+                <span style="color: var(--brand-dark);">PHÒNGTỐT</span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">← Quay lại trang chủ</a>
+                <span class="text-muted small" sec:authorize="isAuthenticated()">
+                    Chào, <strong sec:authentication="name">User</strong>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold m-0"><i class="bi bi-chat-dots me-2" style="color: var(--brand);"></i>Phản ánh
+                        của tôi</h2>
+                    <a href="/feedback" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Gửi phản ảnh mới
+                    </a>
+                </div>
+
+                <div class="card p-4 mb-4">
+                    <form th:action="@{/user/feedbacks}" method="get" class="row g-3">
+                        <div class="col-md-10">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                <input type="text" name="search" class="form-control border-start-0 ps-0"
+                                    placeholder="Tìm kiếm theo tiêu đề hoặc nội dung..." th:value="${search}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary w-100">Tìm kiếm</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div th:if="${#lists.isEmpty(feedbacks)}" class="text-center py-5">
+                    <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-chat-6215160-5100067.png"
+                        alt="Empty" style="max-width: 200px; opacity: 0.5;">
+                    <p class="text-muted mt-3">Bạn chưa có phản ánh nào. Gửi phản ánh đầu tiên của bạn ngay!</p>
+                </div>
+
+                <div class="list-group list-group-flush shadow-sm rounded-3 overflow-hidden bg-white">
+                    <div th:each="f : ${feedbacks}" class="list-group-item feedback-item p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-1" th:text="${f.title}">Tiêu đề phản ánh</h5>
+                            <span th:if="${f.status.name() == 'NEW'}" class="badge badge-new rounded-pill px-3 py-2">Mới
+                                gửi</span>
+                            <span th:if="${f.status.name() == 'IN_PROGRESS'}"
+                                class="badge badge-processing rounded-pill px-3 py-2">Đang xử lý</span>
+                            <span th:if="${f.status.name() == 'DONE'}"
+                                class="badge badge-done rounded-pill px-3 py-2">Đã xong</span>
+                        </div>
+                        <p class="text-muted mb-3" th:text="${#strings.abbreviate(f.content, 200)}">Nội dung tóm tắt...
+                        </p>
+
+                        <div class="d-flex align-items-center gap-3 small text-muted">
+                            <span><i class="bi bi-calendar3 me-1"></i><span
+                                    th:text="${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></span>
+                            <span th:if="${f.roomId != null}"><i class="bi bi-door-open me-1"></i>Phòng <b
+                                    th:text="${f.roomId}"></b></span>
+                        </div>
+
+                        <!-- Trả lời từ admin -->
+                        <div th:if="${f.adminReply != null && !#strings.isEmpty(f.adminReply)}" class="reply-box mt-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-success rounded-circle p-1"><i class="bi bi-check-lg"
+                                        style="font-size: 0.6rem;"></i></span>
+                                <strong style="color: var(--brand-dark); font-size: 0.9rem;">Admin trả lời:</strong>
+                            </div>
+                            <div class="text-dark" style="white-space: pre-wrap; font-size: 0.95rem;"
+                                th:text="${f.adminReply}">Nội dung trả lời...</div>
+                        </div>
+
+                        <div class="mt-3 text-end">
+                            <a th:href="@{'/user/feedbacks/' + ${f.id}}"
+                                class="btn btn-link btn-sm text-decoration-none p-0" style="color: var(--brand);">Xem
+                                chi tiết →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

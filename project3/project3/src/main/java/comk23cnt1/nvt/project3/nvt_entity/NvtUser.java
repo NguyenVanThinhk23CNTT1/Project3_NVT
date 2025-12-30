@@ -3,6 +3,7 @@ package comk23cnt1.nvt.project3.nvt_entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import comk23cnt1.nvt.project3.nvt_enum.Role;
 
 import java.time.LocalDateTime;
 
@@ -32,9 +33,10 @@ public class NvtUser {
     @Column(length = 100, unique = true)
     private String email;
 
-    // ✅ DB role là ENUM('ADMIN','USER') => map STRING
+    // ✅ DB role là ENUM('ADMIN','USER') => map ENUM
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role; // "ADMIN" hoặc "USER"
+    private Role role; // ADMIN hoặc USER
 
     @Column(nullable = false)
     private Boolean enabled;
@@ -49,11 +51,13 @@ public class NvtUser {
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
-
     @PrePersist
     public void prePersist() {
-        if (enabled == null) enabled = true;
-        if (role == null || role.isBlank()) role = "ADMIN";
-        if (status == null || status.isBlank()) status = "ACTIVE";
+        if (enabled == null)
+            enabled = true;
+        if (role == null)
+            role = Role.ADMIN;
+        if (status == null || status.isBlank())
+            status = "ACTIVE";
     }
 }

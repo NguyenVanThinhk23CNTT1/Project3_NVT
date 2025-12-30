@@ -1,244 +1,323 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Admin - Xác nhận thanh toán</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --pt-primary: #22c7c7;
+            --pt-primary-dark: #0ea5a5;
+            --pt-bg: #f6f7fb;
+        }
+
+        body {
+            background: var(--pt-bg);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.025em;
+            border-top: none;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e2e8f0;
+            gap: 8px;
+        }
+
+        .nav-link {
+            border: none !important;
+            color: #64748b;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 12px 12px 0 0 !important;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #edf2f7 !important;
+            color: var(--pt-primary-dark);
+        }
+
+        .nav-link.active {
+            color: var(--pt-primary) !important;
+            background: white !important;
+            position: relative;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--pt-primary);
+        }
+
+        .badge-method {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        .btn-confirm {
+            background: #10b981;
+            color: white;
+            border: none;
+        }
+
+        .btn-confirm:hover {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-reject {
+            color: #ef4444;
+            border: 1px solid #fee2e2;
+            background: #fff1f1;
+        }
+
+        .btn-reject:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .dot-pending {
+            background: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+        }
+    </style>
 </head>
-<body class="bg-light">
-<div class="container py-4">
 
-    <div th:replace="~{admin/fragments/topbar :: topbar('Xác nhận thanh toán')}"></div>
+<body>
+    <div class="container py-4">
 
-    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
-    <div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+        <div th:replace="~{admin/fragments/topbar :: topbar('Xác nhận thanh toán')}"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h4 class="mb-0">Yêu cầu thanh toán</h4>
-            <div class="text-muted small">User gửi yêu cầu, Admin xác nhận mới tính SUCCESS và gửi email</div>
+        <div th:if="${msg}" class="alert alert-success border-0 shadow-sm alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${msg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <a class="btn btn-outline-secondary" href="/admin">← Dashboard</a>
+        <div th:if="${err}" class="alert alert-danger border-0 shadow-sm alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${err}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">Duyệt thanh toán</h3>
+                <p class="text-muted mb-0">Xác nhận các yêu cầu thanh toán từ người dùng</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-white text-dark border p-2 px-3 rounded-pill h-100 d-flex align-items-center">
+                    <span class="status-dot dot-pending"></span>
+                    <span
+                        th:text="${#lists.size(pendingCash) + #lists.size(pendingBank) + #lists.size(pendingMomo) + #lists.size(pendingZaloPay)}">0</span>
+                    yêu cầu chờ duyệt
+                </span>
+                <a class="btn btn-white border rounded-pill shadow-sm" href="/admin">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 pt-3">
+                <ul class="nav nav-tabs card-header-tabs" id="paymentTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="cash-tab" data-bs-toggle="tab" data-bs-target="#cash"
+                            type="button">
+                            <i class="bi bi-cash me-1"></i> Tiền mặt
+                            <span class="badge rounded-pill bg-light text-dark ms-1"
+                                th:text="${#lists.size(pendingCash)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank"
+                            type="button">
+                            <i class="bi bi-bank me-1"></i> Chuyển khoản
+                            <span class="badge rounded-pill bg-light text-dark ms-1"
+                                th:text="${#lists.size(pendingBank)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="momo-tab" data-bs-toggle="tab" data-bs-target="#momo"
+                            type="button">
+                            <i class="bi bi-wallet2 me-1"></i> MoMo
+                            <span class="badge rounded-pill bg-light text-dark ms-1"
+                                th:text="${#lists.size(pendingMomo)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="zalopay-tab" data-bs-toggle="tab" data-bs-target="#zalopay"
+                            type="button">
+                            <i class="bi bi-phone me-1"></i> ZaloPay
+                            <span class="badge rounded-pill bg-light text-dark ms-1"
+                                th:text="${#lists.size(pendingZaloPay)}">0</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                <div class="tab-content" id="paymentTabsContent">
+
+                    <!-- CASH Tab -->
+                    <div class="tab-pane fade show active p-4" id="cash" role="tabpanel">
+                        <div th:replace="~{this :: paymentTable(${pendingCash}, 'CASH', 'btn-confirm', 'bi bi-cash')}">
+                        </div>
+                    </div>
+
+                    <!-- BANK Tab -->
+                    <div class="tab-pane fade p-4" id="bank" role="tabpanel">
+                        <div th:replace="~{this :: paymentTable(${pendingBank}, 'BANK', 'btn-primary', 'bi bi-bank')}">
+                        </div>
+                    </div>
+
+                    <!-- MOMO Tab -->
+                    <div class="tab-pane fade p-4" id="momo" role="tabpanel">
+                        <div
+                            th:replace="~{this :: paymentTable(${pendingMomo}, 'MOMO', 'btn-danger', 'bi bi-wallet2')}">
+                        </div>
+                    </div>
+
+                    <!-- ZALOPAY Tab -->
+                    <div class="tab-pane fade p-4" id="zalopay" role="tabpanel">
+                        <div
+                            th:replace="~{this :: paymentTable(${pendingZaloPay}, 'ZALOPAY', 'btn-info text-white', 'bi bi-phone')}">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-
-            <!-- ================= CASH ================= -->
-            <h6 class="mb-3">Yêu cầu tiền mặt (CASH)</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-4">
-                    <thead>
+    <!-- Fragment to reuse table layout -->
+    <div th:fragment="paymentTable(payments, method, confirmClass, icon)">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Bill</th>
+                        <th class="ps-3">ID / Hóa đơn</th>
                         <th>Thời gian</th>
                         <th>Số tiền</th>
-                        <th>Email</th>
-                        <th>Txn</th>
-                        <th class="text-end">Thao tác</th>
+                        <th>Người trả</th>
+                        <th>Mã giao dịch / Txn</th>
+                        <th class="text-end pe-3">Thao tác</th>
                     </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${pendingCash}">
-                        <td th:text="${p.id}"></td>
-                        <td><a th:href="@{'/admin/bills/' + ${p.billId}}" th:text="${p.billId}"></a></td>
-                        <td th:text="${p.paidAt}"></td>
-                        <td th:text="${p.amount}"></td>
-                        <td th:text="${p.payerEmail}"></td>
-                        <td th:text="${p.transactionCode}"></td>
-                        <td class="text-end">
-                            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/confirm'}" class="m-0">
-                                    <button class="btn btn-sm btn-success"
-                                            onclick="return confirm('Xác nhận đã nhận tiền mặt?');">
-                                        Xác nhận
+                </thead>
+                <tbody>
+                    <tr th:each="p : ${payments}">
+                        <td class="ps-3">
+                            <div class="fw-bold" th:text="'#' + ${p.id}"></div>
+                            <div class="small">
+                                <a th:href="@{'/admin/bills/' + ${p.billId}}" class="text-decoration-none text-muted">
+                                    <i class="bi bi-receipt me-1"></i>Bill #<span th:text="${p.billId}"></span>
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy')}"></div>
+                            <div class="small text-muted" th:text="${#temporals.format(p.paidAt, 'HH:mm')}"></div>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark"
+                                th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></span>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 150px;" th:text="${p.payerEmail}"></div>
+                        </td>
+                        <td>
+                            <code class="px-2 py-1 bg-light rounded text-primary" th:text="${p.transactionCode}"></code>
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex gap-2 justify-content-end align-items-center">
+                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/confirm'}"
+                                    class="m-0">
+                                    <button
+                                        class="btn btn-sm rounded-pill btn-confirm d-flex align-items-center py-1 px-3"
+                                        onclick="return confirm('Xác nhận yêu cầu thanh toán này?');">
+                                        <i class="bi bi-check2-circle me-1"></i> Duyệt
                                     </button>
                                 </form>
 
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/reject'}" class="m-0 d-flex gap-2">
-                                    <input class="form-control form-control-sm" style="width:180px"
-                                           name="reason" placeholder="Lý do (tuỳ chọn)">
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Từ chối yêu cầu này?');">
-                                        Từ chối
-                                    </button>
-                                </form>
+                                <button class="btn btn-sm btn-reject rounded-pill py-1 px-3" data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#rejectModal' + ${p.id}">
+                                    <i class="bi bi-x-circle me-1"></i> Từ chối
+                                </button>
+                            </div>
+
+                            <!-- Reject Modal -->
+                            <div class="modal fade text-start" th:id="'rejectModal' + ${p.id}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                                        <form method="post"
+                                            th:action="@{'/admin/cash-payments/' + ${p.id} + '/reject'}">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="fw-bold">Từ chối thanh toán</h5>
+                                                <button type="button" class="btn-close"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body pt-2">
+                                                <p class="text-muted small mb-3">Vui lòng cung cấp lý do từ chối để gửi
+                                                    thông báo cho người dùng.</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold">Lý do từ chối</label>
+                                                    <textarea class="form-control" name="reason" rows="3"
+                                                        placeholder="Ví dụ: Mã giao dịch không hợp lệ, chưa nhận được tiền..."
+                                                        required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0 pt-0">
+                                                <button type="button" class="btn btn-light rounded-pill px-4"
+                                                    data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-danger rounded-pill px-4">Xác nhận
+                                                    từ chối</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
-
-                    <tr th:if="${#lists.isEmpty(pendingCash)}">
-                        <td colspan="7" class="text-center text-muted">Không có yêu cầu tiền mặt</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <hr class="my-4">
-
-            <!-- ================= BANK ================= -->
-            <h6 class="mb-3">Yêu cầu chuyển khoản (BANK)</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-4">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Bill</th>
-                        <th>Thời gian</th>
-                        <th>Số tiền</th>
-                        <th>Email</th>
-                        <th>Mã GD</th>
-                        <th class="text-end">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${pendingBank}">
-                        <td th:text="${p.id}"></td>
-                        <td><a th:href="@{'/admin/bills/' + ${p.billId}}" th:text="${p.billId}"></a></td>
-                        <td th:text="${p.paidAt}"></td>
-                        <td th:text="${p.amount}"></td>
-                        <td th:text="${p.payerEmail}"></td>
-                        <td th:text="${p.transactionCode}"></td>
-                        <td class="text-end">
-                            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/confirm'}" class="m-0">
-                                    <button class="btn btn-sm btn-success"
-                                            onclick="return confirm('Xác nhận chuyển khoản này?');">
-                                        Xác nhận
-                                    </button>
-                                </form>
-
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/reject'}" class="m-0 d-flex gap-2">
-                                    <input class="form-control form-control-sm" style="width:180px"
-                                           name="reason" placeholder="Lý do (tuỳ chọn)">
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Từ chối yêu cầu này?');">
-                                        Từ chối
-                                    </button>
-                                </form>
-                            </div>
+                    <tr th:if="${#lists.isEmpty(payments)}">
+                        <td colspan="6" class="text-center py-5">
+                            <div class="opacity-25 mb-2"><i th:class="${icon}" style="font-size: 3rem;"></i></div>
+                            <div class="text-muted">Không có yêu cầu thanh toán chờ duyệt</div>
                         </td>
                     </tr>
-
-                    <tr th:if="${#lists.isEmpty(pendingBank)}">
-                        <td colspan="7" class="text-center text-muted">Không có yêu cầu chuyển khoản</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <hr class="my-4">
-
-            <!-- ================= MOMO ================= -->
-            <h6 class="mb-3">Yêu cầu MoMo (MOMO)</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-4">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Bill</th>
-                        <th>Thời gian</th>
-                        <th>Số tiền</th>
-                        <th>Email</th>
-                        <th>Mã GD</th>
-                        <th class="text-end">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${pendingMomo}">
-                        <td th:text="${p.id}"></td>
-                        <td><a th:href="@{'/admin/bills/' + ${p.billId}}" th:text="${p.billId}"></a></td>
-                        <td th:text="${p.paidAt}"></td>
-                        <td th:text="${p.amount}"></td>
-                        <td th:text="${p.payerEmail}"></td>
-                        <td th:text="${p.transactionCode}"></td>
-                        <td class="text-end">
-                            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/confirm'}" class="m-0">
-                                    <button class="btn btn-sm btn-success"
-                                            onclick="return confirm('Xác nhận MoMo này?');">
-                                        Xác nhận
-                                    </button>
-                                </form>
-
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/reject'}" class="m-0 d-flex gap-2">
-                                    <input class="form-control form-control-sm" style="width:180px"
-                                           name="reason" placeholder="Lý do (tuỳ chọn)">
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Từ chối yêu cầu này?');">
-                                        Từ chối
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr th:if="${#lists.isEmpty(pendingMomo)}">
-                        <td colspan="7" class="text-center text-muted">Không có yêu cầu MoMo</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <hr class="my-4">
-
-            <!-- ================= ZALOPAY ================= -->
-            <h6 class="mb-3">Yêu cầu ZaloPay (ZALOPAY)</h6>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Bill</th>
-                        <th>Thời gian</th>
-                        <th>Số tiền</th>
-                        <th>Email</th>
-                        <th>Mã GD</th>
-                        <th class="text-end">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${pendingZaloPay}">
-                        <td th:text="${p.id}"></td>
-                        <td><a th:href="@{'/admin/bills/' + ${p.billId}}" th:text="${p.billId}"></a></td>
-                        <td th:text="${p.paidAt}"></td>
-                        <td th:text="${p.amount}"></td>
-                        <td th:text="${p.payerEmail}"></td>
-                        <td th:text="${p.transactionCode}"></td>
-                        <td class="text-end">
-                            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/confirm'}" class="m-0">
-                                    <button class="btn btn-sm btn-success"
-                                            onclick="return confirm('Xác nhận ZaloPay này?');">
-                                        Xác nhận
-                                    </button>
-                                </form>
-
-                                <form method="post" th:action="@{'/admin/cash-payments/' + ${p.id} + '/reject'}" class="m-0 d-flex gap-2">
-                                    <input class="form-control form-control-sm" style="width:180px"
-                                           name="reason" placeholder="Lý do (tuỳ chọn)">
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Từ chối yêu cầu này?');">
-                                        Từ chối
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr th:if="${#lists.isEmpty(pendingZaloPay)}">
-                        <td colspan="7" class="text-center text-muted">Không có yêu cầu ZaloPay</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
+                </tbody>
+            </table>
         </div>
     </div>
 
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -22,9 +22,9 @@ public class NvtAdminFeedbackController {
 
     @GetMapping
     public String list(Model model,
-                       @RequestParam(value="status", required=false) String status,
-                       @RequestParam(value="msg", required=false) String msg,
-                       @RequestParam(value="err", required=false) String err) {
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "msg", required = false) String msg,
+            @RequestParam(value = "err", required = false) String err) {
 
         NvtFeedback.FeedbackStatus st = null;
         if (status != null && !status.isBlank()) {
@@ -45,11 +45,12 @@ public class NvtAdminFeedbackController {
 
     @PostMapping("/status/{id}")
     public String updateStatus(@PathVariable Long id,
-                               @RequestParam("status") String status,
-                               @RequestParam(value="adminNote", required=false) String adminNote) {
+            @RequestParam("status") String status,
+            @RequestParam(value = "adminNote", required = false) String adminNote,
+            @RequestParam(value = "adminReply", required = false) String adminReply) {
         try {
             NvtFeedback.FeedbackStatus st = NvtFeedback.FeedbackStatus.valueOf(status);
-            feedbackService.updateStatus(id, st, adminNote);
+            feedbackService.updateStatus(id, st, adminNote, adminReply);
             return "redirect:/admin/feedbacks?msg=" + enc("Đã cập nhật phản ánh #" + id);
         } catch (Exception e) {
             return "redirect:/admin/feedbacks?err=" + enc(e.getMessage());

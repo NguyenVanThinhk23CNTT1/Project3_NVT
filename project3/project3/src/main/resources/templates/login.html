@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Phòngtốt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #22c7c7;
+            --brand-2: #0ea5a5;
+            --brand-dark: #0b5564;
+        }
+
+        body {
+            background: url('/anhdaidien.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 0;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 2rem 4rem rgba(0, 0, 0, .15);
+            overflow: hidden;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: white;
+            border-radius: 18px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+        }
+
+        .form-control:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 0.25rem rgba(34, 199, 199, 0.15);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem;
+            font-weight: 700;
+            color: white;
+            width: 100%;
+            transition: all 0.15s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 1rem 2rem rgba(34, 199, 199, 0.25);
+            filter: brightness(1.05);
+        }
+
+        .alert {
+            border-radius: 12px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: var(--brand-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo">🏠</div>
+            <h2 class="mb-0">Đăng nhập</h2>
+            <p class="mb-0 mt-2" style="opacity: 0.9;">Phòngtốt - Quản lý phòng trọ</p>
+        </div>
+
+        <div class="login-body">
+            <!-- Error message -->
+            <div th:if="${param.error}" class="alert alert-danger">
+                ❌ Tên đăng nhập hoặc mật khẩu không đúng!
+            </div>
+
+            <!-- Logout message -->
+            <div th:if="${param.logout}" class="alert alert-success">
+                ✅ Đăng xuất thành công!
+            </div>
+
+            <!-- Success message (from registration) -->
+            <div th:if="${success}" class="alert alert-success">
+                ✅ <span th:text="${success}"></span>
+            </div>
+
+            <!-- Login form -->
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold">Tên đăng nhập</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                        placeholder="Nhập tên đăng nhập" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold">Mật khẩu</label>
+                    <input type="password" class="form-control" id="password" name="password"
+                        placeholder="Nhập mật khẩu" required>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember-me">
+                    <label class="form-check-label" for="remember">
+                        Ghi nhớ đăng nhập
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                    🔐 Đăng nhập
+                </button>
+            </form>
+
+            <div class="back-link">
+                <p class="mb-0">Chưa có tài khoản? <a href="/register">Đăng ký ngay</a></p>
+            </div>
+
+            <div class="back-link">
+                <a href="/">← Quay lại trang chủ</a>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

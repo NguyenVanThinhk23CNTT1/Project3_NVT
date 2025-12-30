@@ -6,11 +6,13 @@ import comk23cnt1.nvt.project3.nvt_entity.NvtRoom;
 import comk23cnt1.nvt.project3.nvt_repository.NvtBillRepository;
 import comk23cnt1.nvt.project3.nvt_repository.NvtFeedbackRepository;
 import comk23cnt1.nvt.project3.nvt_repository.NvtRoomRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
+@PreAuthorize("hasRole('ADMIN')") // Chỉ ADMIN mới truy cập được
 public class NvtAdminPageController {
 
     private final NvtRoomRepository roomRepository;
@@ -18,8 +20,8 @@ public class NvtAdminPageController {
     private final NvtFeedbackRepository feedbackRepository;
 
     public NvtAdminPageController(NvtRoomRepository roomRepository,
-                                  NvtBillRepository billRepository,
-                                  NvtFeedbackRepository feedbackRepository) {
+            NvtBillRepository billRepository,
+            NvtFeedbackRepository feedbackRepository) {
         this.roomRepository = roomRepository;
         this.billRepository = billRepository;
         this.feedbackRepository = feedbackRepository;
